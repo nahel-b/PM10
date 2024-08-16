@@ -11,6 +11,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Rating } from 'react-native-ratings'; // Importer le composant Rating
 import { useTheme } from './context/ThemeContext';
 
+import { addRestaurant } from './api'; 
+
 const DEFAULT_LOCATION = { latitude: 37.78825, longitude: -122.4324 }; 
 const STORAGE_KEY = "lastLocation"; 
 
@@ -20,7 +22,7 @@ const markersData = [
     title: "Best Tacos",
     description: "This is the description of Marker 1",
     type :"restaurant de tacos",
-    coordinate: { latitude: 49.300, longitude: 2.640135858490601 },
+    coordinate: { latitude: 49.300, longitude: 2.641135858490601 },
     image: "maison",
     rating: 4.5,
     reviews: [
@@ -118,49 +120,95 @@ const App = () => {
   // Charger la dernière position stockée dans AsyncStorage au démarrage
   useEffect(() => {
     const loadStoredLocation = async () => {
+
+        const newRestaurant = {
+            id: 1,
+            title: "Best Tacos",
+            description: "This is the description of Marker 1",
+            type: "restaurant de tacos",
+            coordinate: { latitude: 49.300, longitude: 2.641135858490601 },
+            image: "maison",
+            rating: 4.5,
+            reviews: [
+              {
+                name: "Jean Dupont",
+                dish: "Boeuf Bourguignon",
+                price: 25,
+                comment: "Le boeuf était parfaitement cuit, tendre et savoureux.",
+                rating: 4.5,
+                emoji: "🥩"
+              },
+              // Autres avis...
+            ],
+          };
+          
+          try {
+            const response = await addRestaurant(newRestaurant);
+            console.log('Restaurant added:', response);
+          } catch (error) {
+            console.error('Error adding restaurant:', error);
+          }
+        
       try {
         const value = await AsyncStorage.getItem(STORAGE_KEY);
         if (value !== null) {
           const savedLocation = JSON.parse(value);
           setStoredLocation(savedLocation);
+
         } else {
           setStoredLocation(DEFAULT_LOCATION); // Utiliser la position par défaut si aucune position n'est trouvée
         }
+        handleLocationButtonPress(); // Centrer la carte sur la position actuelle ou enregistrée
       } catch (e) {
         console.log("Erreur lors du chargement de la position stockée", e);
       }
     };
 
     loadStoredLocation();
-  }, []);
+
+
+    
+
+
+
+}, []);
+
+useEffect(() => {
+    if (storedLocation) {
+        centerMapOnLocation(); // Centrer la carte dès que storedLocation est mis à jour
+    }
+}, [storedLocation]);
 
   // Obtenir la position actuelle de l'utilisateur
   const getCurrentLocation = async () => {
     setLoading(true);
     setError(null);
     try {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setError('Permission refusée');
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+            setError('Permission refusée');
+            setLoading(false);
+            return;
+        }
+
+        let currentLocation = await Location.getCurrentPositionAsync({});
+        setLocation(currentLocation);
+
+        // Stocker la position dans AsyncStorage
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(currentLocation.coords));
         setLoading(false);
-        return;
-      }
+        console.log("Position actuelle", currentLocation);
+        setStoredLocation(currentLocation.coords); // Mettre à jour la dernière position connue
 
-      let currentLocation = await Location.getCurrentPositionAsync({});
-      setLocation(currentLocation);
-
-      // Stocker la position dans AsyncStorage
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(currentLocation.coords));
-      setLoading(false);
-      console.log("Position actuelle", currentLocation);
-      setStoredLocation(currentLocation.coords); // Mettre à jour la dernière position connue
+        // Centrer la carte dès que la localisation est obtenue
+        centerMapOnLocation();
     } catch (err) {
-      setError('Échec de localisation');
-      console.log("Erreur lors de la localisation", err);
+        setError('Échec de localisation');
+        console.log("Erreur lors de la localisation", err);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
   // Centrer la carte sur la position actuelle ou enregistrée
   const centerMapOnLocation = () => {
@@ -177,8 +225,10 @@ const App = () => {
   // Gestion du clic sur le bouton de localisation
   const handleLocationButtonPress = async () => {
     await getCurrentLocation(); // Chercher la position actuelle
-    centerMapOnLocation(); // Centrer la carte sur la localisation
-  };
+    if (storedLocation) { // Centrer la carte seulement si une localisation est disponible
+        centerMapOnLocation(); // Centrer la carte sur la localisation
+    }
+};
 
   const handleMarkerPress = (marker) => {
     markerPressedRef.current = true;
@@ -232,6 +282,7 @@ const App = () => {
         }}
         onPress={handleMapPress}
         showsUserLocation={true}
+        mapType='terrain'
       >
         {markersData.map((marker) => (
           <CustomMarker
@@ -489,15 +540,21 @@ const CustomMarker = ({ marker, handleMarkerPress, markerPressedRef }) => {
   const image = images[marker.image];
 
   return (
-    <Marker
-      coordinate={marker.coordinate}
-      onPress={() => handleMarkerPress(marker)}
-      anchor={{ x: 0.5, y: 0.5 }}
-    >
-      <Image
-        source={image}
-        style={{ width: 40, height: 40 }}
-      />
+        <Marker
+            coordinate={marker.coordinate}
+            onPress={() => handleMarkerPress(marker)}
+            anchor={{ x: 0.5, y: 0 }}
+            >
+        <View style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center' }}>
+            <Image 
+            source={require('./assets/images/marker.png')}
+            style={{ width: 40, height: 40, position: 'absolute' }}
+            />
+            <Image
+            source={image}
+            style={{ width: 25, height: 25, position: 'absolute',top : -2 }}
+            />
+        </View>
     </Marker>
   );
 };
