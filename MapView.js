@@ -5,10 +5,11 @@ import * as Location from 'expo-location';
 import { PanGestureHandler, GestureHandlerRootView, State } from 'react-native-gesture-handler';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import Feather from 'react-native-vector-icons/Feather';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Rating } from 'react-native-ratings'; // Importer le composant Rating
-
+import { useTheme } from './context/ThemeContext';
 
 const DEFAULT_LOCATION = { latitude: 37.78825, longitude: -122.4324 }; 
 const STORAGE_KEY = "lastLocation"; 
@@ -37,7 +38,7 @@ const markersData = [
           price: 22,
           comment: "Un plat classique, mais avec une touche moderne. Les saveurs étaient bien équilibrées.",
           rating: 4,
-          emoji: "🥩"
+          emoji: "🌯"
         },
         {
           name: "Pierre Lefèvre",
@@ -45,7 +46,7 @@ const markersData = [
           price: 8,
           comment: "Dessert excellent, mais la pâte aurait pu être un peu plus croustillante.",
           rating: 4.5,
-          emoji: "🥩"
+          emoji: "🥗"
         },
         {
           name: "Sophie Durand",
@@ -318,7 +319,8 @@ const images = {
 
 const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
     const image = images[selectedMarker.image];
-  
+    const { theme } = useTheme();
+
     return (
       <PanGestureHandler
         onGestureEvent={(event) => {
@@ -346,7 +348,7 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
             right: 0,
             height: animatedHeight,
             backgroundColor: 'white',
-            padding: 20,
+            padding: 0,
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
             shadowColor: '#000',
@@ -372,73 +374,111 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
               borderColor: 'white',
             }}
           />
-          <View style={{ alignItems: 'flex-end' }}>
-            <TouchableOpacity onPress={closeModal}>
-              <Ionicons name="close" size={30} color="gray" />
+          <View style={{justifyContent : "flex-end", alignItems: 'center',paddingTop : 10,paddingRight : 10, flexDirection : "row" }}>
+          
+          <TouchableOpacity onPress={()=>{}}>
+            <View style={{backgroundColor : "transparent", padding : 2, borderRadius : 50, marginRight : 5}}>
+              <Feather name="more-horizontal" size={25} color="gray" />
+              </View>
             </TouchableOpacity>
+
+            
+            <TouchableOpacity onPress={closeModal}>
+                <View style={{backgroundColor : theme.light_gray, padding : 2, borderRadius : 50}}>
+              <Ionicons name="close" size={22} color="gray" />
+                </View>
+            </TouchableOpacity>
+
           </View>
+          <View style={{ paddingHorizontal  : 20 }}>
           <Text style={{ fontFamily : 'Inter-Black', fontSize: 30,  marginTop: 10 }}>{selectedMarker.title}</Text>
-          <Text style={{fontFamily : 'Inter-Regular', fontSize: 12, marginTop: -5, color : "gray" }}>{selectedMarker.type}</Text>
+          <Text style={{fontFamily : 'Inter-Regular', fontSize: 12, marginTop: -5, color : theme.dark_gray }}>{selectedMarker.type}</Text>
   
           {/* Section pour le bouton et les étoiles */}
           <View style={{ flexDirection: 'row', marginTop: 10, alignItems: 'center' }}>
-            {/* Bouton pour rédiger un avis */}
+            
+            <View>
             
             
-            <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 16, color: 'black' }}>
-              {selectedMarker.rating}
-            </Text>
+            </View>
             <Rating
               type='custom'
-              ratingColor='#FFD700'
-              ratingBackgroundColor='#D3D3D3'
+              ratingColor={"#FFC300"}
+              ratingBackgroundColor={theme.light_gray}
               startingValue={selectedMarker.rating}
-              imageSize={20}
+              imageSize={22}
               readonly
               tintColor='white'
               style={{ marginLeft: 5 }}
             />
-            <TouchableOpacity onPress={() => {/* Logique pour ouvrir une modale ou un écran de rédaction d'avis */}}>
-              <Ionicons name="create-outline" size={24} color="gray" style={{ marginLeft: 10 }} />
+            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: theme.dark_gray }}>
+                12 avis
+            </Text>
+            <TouchableOpacity onPress={() => {}}>
+
+             <View style={{alignItems : "center", backgroundColor : theme.light_gray,marginLeft: 10, padding : 4, flexDirection : "row", borderRadius : 7 }} >
+
+              <Ionicons name="create-outline" size={18} color={theme.dark_gray} style={{  }} />
+                <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 14, color: theme.dark_gray, marginLeft : 5 }}>
+                    Rédiger un avis
+                </Text>
+            </View>
             </TouchableOpacity>
+            <TouchableOpacity onPress={() => {}}>
+            <View style={{alignItems : "center", backgroundColor : theme.light_gray,marginLeft: 10, padding : 4, flexDirection : "row", borderRadius : 7 }} >
+                    
+                  <Ionicons name="bookmark-outline" size={18} color="gray" style={{  }} />
+                 
+                 </View>
+            </TouchableOpacity>
+            
           </View>
 
-            <View style={{ borderBottomColor: 'lightgray', borderBottomWidth: 1, marginVertical: 15 }} />
-  
+            <View style={{ borderBottomColor: theme.light_gray, borderBottomWidth: 2, marginVertical: 15 }} />
+            </View>
           {/* Section pour afficher les avis */}
-          <ScrollView style={{ marginTop: 10 }}>
+          <ScrollView style={{ marginTop: 10, }}>
+            <View style={{ paddingHorizontal: 20 }}>
             {selectedMarker.reviews && selectedMarker.reviews.map((review, index) => (
-              <View key={index} style={{ marginBottom: 15 }}>
-                <View style={{ flexDirection: 'row', justifyContent : 'space-between',alignItems : "center" }}>
-                
+              <View key={index} style={{ marginBottom: 15, backgroundColor : theme.light_gray,padding : 5,paddingHorizontal : 8,borderRadius : 10 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View>
+                            <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 15, color: 'black' }}>
+                                {review.emoji} {review.dish}
+                            </Text>
+                        </View>
+                        <View style={{ backgroundColor: theme.blue, padding: 2,paddingHorizontal : 4, borderRadius: 5, marginLeft: 3, alignItems: 'center' }}>
+                            <Text style={{ color: "white", fontFamily: 'Inter-SemiBold', fontSize: 13 }}>
+                                {review.price}€
+                            </Text>
+                        </View>
+                    </View>
                     <View>
-                <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 15, color: 'black' }}>
-                {review.emoji} {review.dish}  {review.price}€
-                </Text>
+                        <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 11, color: 'gray', textDecorationLine: 'none' }}>
+                            {review.name}
+                        </Text>
+                    </View>
                 </View>
-                <View>
-                    <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: 'gray', textDecorationLine : "none" }}>
-                    {review.name}
-                    </Text>
-                </View>
-                </View>
+
 
                 <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: 'gray', marginVertical: 5 }}>
                   {review.comment}
                 </Text>
                 
-                <Rating
+                {/* <Rating
                   type='custom'
                   ratingColor='#FFD700'
                   ratingBackgroundColor='#D3D3D3'
                   startingValue={review.rating}
                   imageSize={15}
                   readonly
-                  tintColor='white'
+                  tintColor={theme.light_gray}
                   style={{ alignSelf: 'flex-start' }}
-                />
+                /> */}
               </View>
             ))}
+            </View>
           </ScrollView>
         </Animated.View>
       </PanGestureHandler>
