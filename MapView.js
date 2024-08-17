@@ -7,14 +7,13 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Feather from 'react-native-vector-icons/Feather';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ToastObj } from './Utils';
 import { Rating } from 'react-native-ratings'; // Importer le composant Rating
 import { useTheme } from './context/ThemeContext';
 
 import MapView from "react-native-map-clustering";
 
-
-import { addRestaurant } from './api'; 
 
 const DEFAULT_LOCATION = { latitude: 37.78825, longitude: -122.4324 }; 
 const STORAGE_KEY = "lastLocation"; 
@@ -108,7 +107,7 @@ const markersData = [
   },
 ];
 
-const App = () => {
+const App = ({route}) => {
     const mapRef = useRef(null);
     const [selectedMarker, setSelectedMarker] = useState(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -119,8 +118,15 @@ const App = () => {
     const { theme } = useTheme();
     const animatedHeight = useRef(new Animated.Value(0)).current;
     const markerPressedRef = useRef(false);
-  
+
+    const restaurants = route.params.restaurants;
+
+
+    useEffect(()=>{console.log("change")},[restaurants])
+
+   
     useEffect(() => {
+        console.log("Restaurants", route.params.restaurants);
       const loadStoredLocation = async () => {
         try {
           const value = await AsyncStorage.getItem(STORAGE_KEY);
@@ -260,6 +266,8 @@ const App = () => {
             const { id, geometry, properties } = cluster;
             const points = properties.point_count;
 
+
+
             return (
               <Marker
                 key={`cluster-${id}`}
@@ -275,7 +283,9 @@ const App = () => {
             );
           }}
         >
-          {markersData.map((marker) => (
+          {
+          restaurants.map &&
+          restaurants.map((marker) => (
             <Marker
               key={marker.id}
               coordinate={marker.coordinate}
@@ -294,7 +304,9 @@ const App = () => {
               </View>
             </Marker>
           ))}
+          
         </MapView>
+       
   
         {selectedMarker && (
           <ModalMarker

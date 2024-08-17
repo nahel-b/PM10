@@ -6,7 +6,7 @@ import AuthScreen from './AuthScreen'; // Remplace AuthModal par un écran de na
 
 const Stack = createStackNavigator();
 
-export default function AppNavigator({ isAuthenticated }) {
+export default function AppNavigator({ isAuthenticated, restaurants }) {
   return (
     <NavigationContainer>
       <Stack.Navigator
@@ -16,7 +16,12 @@ export default function AppNavigator({ isAuthenticated }) {
         }}
       >
         {isAuthenticated ? (
-          <Stack.Screen name="MapView" component={MapView} />
+          // Pass the restaurants as initialParams to the MapView screen
+          <Stack.Screen 
+            name="MapView" 
+            component={MapView} 
+            initialParams={{ restaurants: restaurants }} 
+          />
         ) : (
           <Stack.Screen name="Auth" component={AuthScreen} />
         )}
