@@ -3,7 +3,7 @@ import { createStackNavigator, TransitionPresets } from '@react-navigation/stack
 import { NavigationContainer } from '@react-navigation/native';
 import MapView from './MapView';
 import AuthScreen from './AuthScreen'; // Remplace AuthModal par un écran de navigation
-
+import AvisView from './AvisView';
 const Stack = createStackNavigator();
 
 export default function AppNavigator({ isAuthenticated }) {
@@ -17,10 +17,17 @@ export default function AppNavigator({ isAuthenticated }) {
       >
         {isAuthenticated ? (
           // Pass the restaurants as initialParams to the MapView screen
+          <>
           <Stack.Screen 
             name="MapView" 
             component={MapView} 
           />
+          <Stack.Screen
+            name='AvisView'
+            component={AvisView}
+            
+            />
+            </>
         ) : (
           <Stack.Screen name="Auth" component={AuthScreen} />
         )}

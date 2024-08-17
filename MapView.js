@@ -6,11 +6,14 @@ import { PanGestureHandler, GestureHandlerRootView, State } from 'react-native-g
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Feather from 'react-native-vector-icons/Feather';
+import FontAwesome from  '@expo/vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ToastObj } from './Utils';
 import { Rating } from 'react-native-ratings'; // Importer le composant Rating
 import { useTheme } from './context/ThemeContext';
+import { useNavigation } from '@react-navigation/native';
+
 
 import MapView from "react-native-map-clustering";
 import { useRestaurant } from './context/RestaurantsContext';
@@ -122,8 +125,8 @@ const App = ({}) => {
 
     const {restaurants} = useRestaurant();
 
-    
-
+     
+ 
    
     useEffect(() => {
       const loadStoredLocation = async () => {
@@ -261,6 +264,7 @@ const App = ({}) => {
           }}
           onPress={handleMapPress}
           showsUserLocation={true}
+          
           renderCluster={(cluster) => {
             const { id, geometry, properties } = cluster;
             const points = properties.point_count;
@@ -289,21 +293,45 @@ const App = ({}) => {
               key={marker.id}
               coordinate={marker.coordinate}
               onPress={() => handleMarkerPress(marker)}
-              zIndex={2}
-            >
-              <View style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center' }}>
-                <Image 
+              zIndex={selectedMarker ?( selectedMarker.id == marker.id ? 3 : 2) : 2}
+              
+            > 
+              <View style={{borderRadius : 5,
+                shadowColor: '#000',
+                opacity : selectedMarker ? (selectedMarker.id != marker.id ? 0.5 : 1) : 1,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.5,
+                 padding : 5, justifyContent: 'flex-start', alignItems: 'flex-start',backgroundColor : theme.background }}>
+                {/* <Image 
                   source={require('./assets/images/marker.png')}
                   style={{ width: 40, height: 40, position: 'absolute' }}
-                />
+                /> */}
+
+                
                 <Image
                   source={images[marker.image]}
-                  style={{ width: 25, height: 25, position: 'absolute', top: -2 }}
+                  style={{ width: 25, height: 25,  top: -16, position : "absolute" }}
                 />
-                
+
+                <View style={{position : "absolute", top: -10, right : -5, padding : 4, backgroundColor : theme.blue,borderRadius : 5 }}>
+                    <Text style={{ fontFamily : 'Inter-Black', fontSize: 12, color : "white"   }}>New</Text>
+                </View>
+
+                <Text style={{marginTop : 5, fontFamily : 'Inter-Black', fontSize: 14,   }}>{marker.title} </Text>
+                <Text style={{fontFamily : 'Inter-Medium', fontSize: 10, marginTop: -2, color : theme.dark_gray }}>{marker.type}</Text>
+                <Rating
+              type='custom' 
+              ratingColor={"#FFC300"}
+              ratingBackgroundColor={theme.light_gray}
+              startingValue={marker.rating}
+              imageSize={15}
+              readonly
+              tintColor='white' 
+              style={{ marginLeft: 0 }} 
+            />
               </View>
             </Marker>
-          ))}
+          ))} 
                    
 
         </MapView>
@@ -393,9 +421,12 @@ const images = {
   cafe: require('./assets/images/logo_cafe.png'),
 };
 
+
 const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
     const image = images[selectedMarker.image];
     const { theme } = useTheme();
+
+    const navigation = useNavigation();
 
     return (
       <PanGestureHandler
@@ -457,26 +488,29 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
               <Feather name="more-horizontal" size={25} color="gray" />
               </View>
             </TouchableOpacity>
-
+ 
             
             <TouchableOpacity onPress={closeModal}>
                 <View style={{backgroundColor : theme.light_gray, padding : 2, borderRadius : 50}}>
               <Ionicons name="close" size={22} color="gray" />
-                </View>
+                </View> 
             </TouchableOpacity>
-
+ 
           </View>
           <View style={{ paddingHorizontal  : 20 }}>
-          <Text style={{ fontFamily : 'Inter-Black', fontSize: 30,  marginTop: 10 }}>{selectedMarker.title}</Text>
-          <Text style={{fontFamily : 'Inter-Regular', fontSize: 12, marginTop: -5, color : theme.dark_gray }}>{selectedMarker.type}</Text>
-  
-          {/* Section pour le bouton et les étoiles */}
-          <View style={{ flexDirection: 'row', marginTop: 10, alignItems: 'center' }}>
-            
+
+            <View style={{flexDirection:"row",justifyContent : "space-between", alignItems : "flex-end"}}>
             <View>
-            
+            <Text style={{ fontFamily : 'Inter-Black', fontSize: 30,  marginTop: 10 }}>{selectedMarker.title} </Text>
+            <Text style={{fontFamily : 'Inter-Medium', fontSize: 12, marginTop: -5, color : theme.dark_gray }}>{selectedMarker.type}</Text>
             
             </View>
+            {/* <Text style={{color : theme.dark_gray,fontSize : 11}}>Proposé par <Text style={{color : "red"}}>{selectedMarker.author}</Text></Text> */}
+            </View>
+          {/* Section pour le bouton et les étoiles */}
+          <View style={{ flexDirection: 'row', marginTop: 10, alignItems: 'center',justifyContent :"flex-start" }}>
+            
+            <View style={{flexDirection : "row",alignItems:"center"}}>
             <Rating
               type='custom'
               ratingColor={"#FFC300"}
@@ -485,20 +519,25 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
               imageSize={22}
               readonly
               tintColor='white'
-              style={{ marginLeft: 5 }}
+              style={{ marginLeft: 0 }} 
             />
             <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: theme.dark_gray }}>
                 12 avis
             </Text>
-            <TouchableOpacity onPress={() => {}}>
+            </View>
+            <TouchableOpacity onPress={() => 
+                {
+                    navigation.navigate('AvisView'); 
+
+                }}>
 
              <View style={{alignItems : "center", backgroundColor : theme.light_gray,marginLeft: 10, padding : 4, flexDirection : "row", borderRadius : 7 }} >
 
-              <Ionicons name="create-outline" size={18} color={theme.dark_gray} style={{  }} />
+              <FontAwesome name="pencil" size={15} color={theme.dark_gray} style={{  }} />
                 <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 14, color: theme.dark_gray, marginLeft : 5 }}>
                     Rédiger un avis
                 </Text>
-            </View>
+            </View> 
             </TouchableOpacity>
             <TouchableOpacity onPress={() => {}}>
             <View style={{alignItems : "center", backgroundColor : theme.light_gray,marginLeft: 10, padding : 4, flexDirection : "row", borderRadius : 7 }} >
@@ -508,12 +547,13 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
                  </View>
             </TouchableOpacity>
             
-          </View>
+          </View>  
+          <Text style={{textAlign : "left", fontFamily : "Inter-Medium",marginTop : 10,color : theme.dark_gray,fontSize : 11}}>Proposé par <Text style={{color : "red"}}>{selectedMarker.author}</Text></Text>
 
-            <View style={{ borderBottomColor: theme.light_gray, borderBottomWidth: 2, marginVertical: 15 }} />
+            <View style={{ borderBottomColor: theme.light_gray, borderBottomWidth: 2, marginBottom: 5,marginTop : 5 }} />
             </View>
           {/* Section pour afficher les avis */}
-          <ScrollView style={{ marginTop: 10, }}>
+          <ScrollView style={{ paddingTop: 10, }}>
             <View style={{ paddingHorizontal: 20 }}>
             {selectedMarker.reviews && selectedMarker.reviews.map((review, index) => (
               <View key={index} style={{ marginBottom: 15, backgroundColor : theme.light_gray,padding : 5,paddingHorizontal : 8,borderRadius : 10 }}>
