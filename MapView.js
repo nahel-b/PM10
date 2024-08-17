@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { View, Text, Animated, Dimensions, Image, TouchableOpacity, ActivityIndicator,ScrollView } from 'react-native';
 import { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { PanGestureHandler, GestureHandlerRootView, State } from 'react-native-gesture-handler';
+import { PanGestureHandler, GestureHandlerRootView, State, TextInput } from 'react-native-gesture-handler';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Feather from 'react-native-vector-icons/Feather';
@@ -124,6 +124,7 @@ const App = ({}) => {
     const markerPressedRef = useRef(false);
 
     const {restaurants} = useRestaurant();
+    const searchInputRef = useRef(null);
 
      
  
@@ -224,9 +225,10 @@ const App = ({}) => {
       }).start(() => {
         setIsModalVisible(false);
         setSelectedMarker(null);
-      });
+      }); 
     };
-  
+    
+    const navigation = useNavigation(); 
     const handleMapPress = () => {
       if (!markerPressedRef.current) {
         closeModal();
@@ -298,7 +300,7 @@ const App = ({}) => {
             > 
               <View style={{borderRadius : 5,
                 shadowColor: '#000',
-                opacity : selectedMarker ? (selectedMarker.id != marker.id ? 0.5 : 1) : 1,
+                opacity : selectedMarker ? (selectedMarker.id != marker.id ? 0.3 : 1) : 1,
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.5,
                  padding : 5, justifyContent: 'flex-start', alignItems: 'flex-start',backgroundColor : theme.background }}>
@@ -372,6 +374,24 @@ const App = ({}) => {
             )}
           </TouchableOpacity>
         </View>
+
+        <View style={{ flexDirection : "row", alignSelf : "center",alignItems : "center",position : "absolute",top : 60, width : "90%"}}>
+            <View style={{flexDirection : "row",borderRadius : 15,backgroundColor :  theme.background,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.5,
+                shadowRadius: 3,
+                paddingVertical : 10, paddingHorizontal : 7,flex : 1,flexGrow : 2}}>
+                <Ionicons name="search" size={20} color={theme.dark_gray}/>
+                <TextInput ref={searchInputRef} style={{color : theme.dark_gray,fontFamily : "Inter-Bold", marginLeft : 5}} placeholder='Recherche...' />
+            </View>
+            <TouchableOpacity activeOpacity={0.5} onPress={()=>navigation.navigate("ReglageView")}>
+            <View style={{marginLeft : 5}}>
+                 <Ionicons name="cog" size={33} color={theme.text} /> 
+            </View>
+            </TouchableOpacity>
+        </View>
+        
     
   
         {selectedMarker && (

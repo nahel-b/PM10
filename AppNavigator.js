@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import MapView from './MapView';
 import AuthScreen from './AuthScreen'; // Remplace AuthModal par un écran de navigation
 import AvisView from './AvisView';
+import ReglageView from './ReglageView';
 const Stack = createStackNavigator();
 
 export default function AppNavigator({ isAuthenticated }) {
@@ -25,6 +26,11 @@ export default function AppNavigator({ isAuthenticated }) {
           <Stack.Screen
             name='AvisView'
             component={AvisView}
+            
+            />
+            <Stack.Screen
+            name='ReglageView'
+            component={ReglageView}
             
             />
             </>
