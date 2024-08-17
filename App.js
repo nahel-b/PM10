@@ -3,6 +3,7 @@ import { Alert, View, Text } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeProvider,useTheme } from './context/ThemeContext';
+import { RestaurantProvider,useRestaurant } from './context/RestaurantsContext';
 import AppNavigator from './AppNavigator';
 import { API_URL } from './config';
 
@@ -13,9 +14,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const Principal = ({ navigation }) => {
   const [isConnected, setIsConnected] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [restaurants, setRestaurants] = useState([]);
   const { theme } = useTheme();
-
+  const { restaurants, setRestaurants} = useRestaurant();
 
   useEffect(() => {
     // Vérifier la connexion Internet
@@ -81,7 +81,7 @@ const Principal = ({ navigation }) => {
 
   return (
     <View style={{flex : 1}}>
-      <AppNavigator  isAuthenticated={isAuthenticated} restaurants={restaurants} />
+      <AppNavigator  isAuthenticated={isAuthenticated} />
       <ToastObj/> 
     </View>
   );
@@ -93,7 +93,9 @@ export default function App()
 
   return (
     <ThemeProvider>
-      <Principal/>
+      <RestaurantProvider>
+        <Principal/>
+      </RestaurantProvider>
     </ThemeProvider>
   );
 }

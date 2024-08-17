@@ -13,6 +13,7 @@ import { Rating } from 'react-native-ratings'; // Importer le composant Rating
 import { useTheme } from './context/ThemeContext';
 
 import MapView from "react-native-map-clustering";
+import { useRestaurant } from './context/RestaurantsContext';
 
 
 const DEFAULT_LOCATION = { latitude: 37.78825, longitude: -122.4324 }; 
@@ -107,7 +108,7 @@ const markersData = [
   },
 ];
 
-const App = ({route}) => {
+const App = ({}) => {
     const mapRef = useRef(null);
     const [selectedMarker, setSelectedMarker] = useState(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -119,14 +120,12 @@ const App = ({route}) => {
     const animatedHeight = useRef(new Animated.Value(0)).current;
     const markerPressedRef = useRef(false);
 
-    const restaurants = route.params.restaurants;
+    const {restaurants} = useRestaurant();
 
-
-    useEffect(()=>{console.log("change")},[restaurants])
+    
 
    
     useEffect(() => {
-        console.log("Restaurants", route.params.restaurants);
       const loadStoredLocation = async () => {
         try {
           const value = await AsyncStorage.getItem(STORAGE_KEY);
@@ -248,12 +247,12 @@ const App = ({route}) => {
           <Text style={{ color: 'white', fontFamily:"Inter-Black",fontSize : 20 }}>{count}</Text>
         </View>
       );
-  
+   
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>
         <MapView
           ref={mapRef}
-          style={{ flex: 1 }}
+          style={{ flex: 1 }} 
           initialRegion={{
             latitude: storedLocation?.latitude || DEFAULT_LOCATION.latitude,
             longitude: storedLocation?.longitude || DEFAULT_LOCATION.longitude,
@@ -284,7 +283,7 @@ const App = ({route}) => {
           }}
         >
           {
-          restaurants.map &&
+          
           restaurants.map((marker) => (
             <Marker
               key={marker.id}
@@ -301,12 +300,13 @@ const App = ({route}) => {
                   source={images[marker.image]}
                   style={{ width: 25, height: 25, position: 'absolute', top: -2 }}
                 />
+                
               </View>
             </Marker>
           ))}
-          
+                   
+
         </MapView>
-       
   
         {selectedMarker && (
           <ModalMarker
