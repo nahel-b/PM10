@@ -35,16 +35,25 @@ import Animated, {
 
 export default AvisView = ({}) => {
 
-    const { theme } = useTheme();
+    const { theme,changeTheme,themeName } = useTheme();
     const navigation = useNavigation();
 
     const indicatorPosition = useSharedValue(0);
     const [index, setIndex] = useState(0);
-
+    const switchRef = useRef(null);
+    const ModeName = ["☀️ Light mode","🌑 Dark mode","🤖 Auto"]
+    const themeNames = ["light","dark","auto"]
 
     useEffect(() => {
-        indicatorPosition.value = withSpring(index === 0 ? 3 : (index === 1 ? (windowWidth*90/300 + 3 ) : windowWidth*(90/100)*2/3 + 1 ),{damping: 30, stiffness: 200,});
+        
+        indicatorPosition.value = withSpring(index === 0 ? 3 : (index === 1 ? 42 : 83 ),{damping: 30, stiffness: 200,});
       }, [index]);
+
+    useEffect(()=>
+        {
+            setIndex(themeNames.findIndex(index => index === themeName ))
+            console.log(themeNames.findIndex((index) => {index === themeName} ))
+        },[])
 
       const animatedIndicatorStyle = useAnimatedStyle(() => {
         return {
@@ -54,6 +63,7 @@ export default AvisView = ({}) => {
 
       const handleSwitch = (newIndex) => {
         setIndex(newIndex);
+        changeTheme(newIndex ===0 ? "light" : (newIndex ===1 ? "dark" : "auto"))
       };
 
 
@@ -66,17 +76,19 @@ export default AvisView = ({}) => {
                     </View>
                 </TouchableOpacity>
                 <View style={{paddingHorizontal : 20}}>
-                    <Text style={{fontFamily: "Inter-Black", fontSize : 22}}>
+                    <Text style={{fontFamily: "Inter-Black",color : theme.text, fontSize : 22}}>
                         Réglage
                     </Text>
                 </View>
+
+
                 <View style={{ marginHorizontal : 20, borderBottomColor: theme.light_gray, borderBottomWidth: 2, marginVertical: 15 }} />
 
                 
 
                 <View style={{ flexDirection : "row", backgroundColor : theme.light_gray,alignItems : "center",paddingVertical : 5,paddingHorizontal : 10,borderRadius : 5,marginTop : 10, marginHorizontal : 20,justifyContent : "space-between"}}>
 
-                        <Text style={{fontFamily : "Inter-Bold", fontSize : 15,color : theme.dark_gray}}>
+                        <Text style={{fontFamily : "Inter-Bold", fontSize : 15,color : theme.text_light}}>
                             {"🇫🇷 Langue"}
                         </Text>
                     <View style={{flexDirection:"row",alignItems : "center"}}>
@@ -88,24 +100,29 @@ export default AvisView = ({}) => {
                 </View>
 
 
-                <View style={{
+                <View style={{ flexDirection : "row", backgroundColor : theme.light_gray,alignItems : "center",paddingLeft : 10,borderRadius : 10,marginTop : 10, marginHorizontal : 20,justifyContent : "space-between"}}>
+               
+                <Text style={{fontFamily : "Inter-Bold", fontSize : 15,color : theme.text_light}}>
+                            {ModeName[index]}
+                        </Text>
+
+                <View ref={switchRef} style={{
                     flexDirection: 'row',
                     justifyContent: 'flex-start',
                     alignItems: 'center', // Ajouter cet alignement
                     
-                    marginVertical : 20,
                     backgroundColor : theme.light_gray,
                     borderRadius: 10,
-                    width: '90%',
+                    width: 'auto',
                     alignSelf: 'center',
                     height: 40,
                 }}>
                 
                 <Animated.View style={[{
                     position: 'absolute',
-                    width: '32%',
+                    width: 33,
                     height: '80%',
-                    backgroundColor: '#ccc', // Couleur de l'indicateur
+                    backgroundColor: theme.gray, // Couleur de l'indicateur
                     borderRadius: 8,
 
 
@@ -117,7 +134,6 @@ export default AvisView = ({}) => {
                         ()=>{handleSwitch(0)}
                     }
                     style={{
-                        flex: 1,
                         padding: 10,
                         justifyContent: 'center',
                         alignItems: 'center',
@@ -125,7 +141,7 @@ export default AvisView = ({}) => {
 
                     }}>
                     <Text style={{ fontFamily : "Inter-Bold", fontSize : 13,marginBottom : 0,color : theme.dark_gray}}>
-                    {"☀️ Light"}
+                    {"☀️ "}
                     </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -133,7 +149,6 @@ export default AvisView = ({}) => {
                         ()=>{handleSwitch(1)}
                     }
                     style={{
-                        flex: 1,
                         padding: 10,
                         justifyContent: 'center',
                         alignItems: 'center',
@@ -141,7 +156,7 @@ export default AvisView = ({}) => {
 
                     }}>
                     <Text style={{ fontFamily : "Inter-Bold", fontSize : 13,marginBottom : 0,color : theme.dark_gray}}>
-                        {"🌑 Dark"}
+                        {"🌑 "}
                     </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -149,15 +164,14 @@ export default AvisView = ({}) => {
                         ()=>{handleSwitch(2)}
                     }
                     style={{
-                        flex: 1,
                         padding: 10,
                         justifyContent: 'center',
                         alignItems: 'center',
                         borderRadius: 10,
 
                     }}>
-                    <Text style={{ fontFamily : "Inter-Bold", fontSize : 13,marginBottom : 0,color : theme.dark_gray}}>
-                    {"🤖 Auto"}
+                    <Text style={{ fontFamily : "Inter-Bold", fontSize : 13,marginBottom : 0,color : theme.text_light}}>
+                    {"🤖 "}
                     </Text>
                     </TouchableOpacity>
 
@@ -165,7 +179,7 @@ export default AvisView = ({}) => {
                 </View>
 
 
-
+                </View>
 
 
 
@@ -180,7 +194,7 @@ export default AvisView = ({}) => {
 
                         <View style={{flexDirection : "row",marginLeft : 5, paddingBottom : 20,alignItems : "center"}}>
                             {/* <FontAwesome name={"pencil"}  color={theme.gray}/> */}
-                            <TextInput numberOfLines={2} placeholder='Très bon... ' style={{fontFamily : "Inter-SemiBold",marginLeft : 2, height : "200%"}}/>
+                            <TextInput numberOfLines={2} placeholder='Très bon... ' style={{fontFamily : "Inter-SemiBold",color : theme.text_light, marginLeft : 2, height : "200%"}}/>
                         </View>
                     </View>
                 </View>

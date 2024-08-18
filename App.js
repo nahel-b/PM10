@@ -14,10 +14,23 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const Principal = ({ navigation }) => {
   const [isConnected, setIsConnected] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const { theme } = useTheme();
+  const { theme,changeTheme } = useTheme();
   const { restaurants, setRestaurants} = useRestaurant();
 
   useEffect(() => {
+
+
+    const loadTheme = async ()=>
+      {
+        const themeName = await AsyncStorage.getItem("themeName")
+        if(themeName){
+        changeTheme(themeName)
+          console.log(themeName)
+      }
+      }
+
+
+
     // Vérifier la connexion Internet
     const unsubscribe = NetInfo.addEventListener(state => {
       setIsConnected(state.isConnected);
@@ -27,8 +40,32 @@ const Principal = ({ navigation }) => {
       }
     });
 
+    
+
+     // Fonction pour récupérer les restaurants
+     const loadAllRestaurants = async () => {
+      try {
+
+        await loadTheme();
+        ToastNotif("Récupération des restaurants...", "loading-cricle", { button_background: theme.background, text: theme.text }, theme.text, 10000,"top",true);
+        const response = await getAllRestaurants();
+        // const data = await response.json();
+        setRestaurants(response); 
+        ToastHide(); 
+        // Afficher une toast
+        // ToastNotif("Restaurants récupérés avec succès", "check-circle", { button_background: "green", text: "white" }, "white", 3000);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des restaurants:', error);
+        ToastNotif("Erreur lors de la récupération des restaurants", "times-circle", { button_background: "red", text: "white" }, "white", 3000);
+      }
+    };
     // Vérifier si l'utilisateur est authentifié
     const checkAuthentication = async () => {
+
+      await loadTheme();
+
+      loadAllRestaurants();
+
       const token = await AsyncStorage.getItem('authToken');
       if (token) {
         try {
@@ -54,25 +91,13 @@ const Principal = ({ navigation }) => {
       }
     }; 
 
-     // Fonction pour récupérer les restaurants
-     const loadAllRestaurants = async () => {
-      try {
-        ToastNotif("Récupération des restaurants...", "loading-cricle", { button_background: theme.background, text: theme.text }, theme.text, 10000,"top",true);
-        const response = await getAllRestaurants();
-        // const data = await response.json();
-        setRestaurants(response); 
-        ToastHide(); 
-        // Afficher une toast
-        // ToastNotif("Restaurants récupérés avec succès", "check-circle", { button_background: "green", text: "white" }, "white", 3000);
-      } catch (error) {
-        console.error('Erreur lors de la récupération des restaurants:', error);
-        ToastNotif("Erreur lors de la récupération des restaurants", "times-circle", { button_background: "red", text: "white" }, "white", 3000);
-      }
-    };
-
-    loadAllRestaurants();
-
     checkAuthentication();
+
+    
+
+   
+
+    
 
     return () => {
       unsubscribe(); 
