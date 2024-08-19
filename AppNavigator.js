@@ -7,6 +7,10 @@ import AvisView from './AvisView';
 import ReglageView from './ReglageView';
 import NewAvisView from './NewAvisView';
 
+import 'react-native-gesture-handler';
+import { enableScreens } from 'react-native-screens';
+import 'react-native-reanimated';
+
 const Stack = createStackNavigator();
 
 export default function AppNavigator({ isAuthenticated }) {
@@ -22,6 +26,10 @@ export default function AppNavigator({ isAuthenticated }) {
             <Stack.Screen 
               name="MapView" 
               component={MapView} 
+              options={{
+                ...TransitionPresets.ModalSlideFromBottomIOS, // Applique l'effet modal
+               
+              }}
             />
             <Stack.Screen
               name="AvisView"

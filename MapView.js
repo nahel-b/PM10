@@ -276,7 +276,6 @@ const App = () => {
           userInterfaceStyle={themeName === 'dark' ? 'dark' : 'light'}
           onPress={handleMapPress}
           showsUserLocation={true}
-          minZoomLevel={5}
             renderCluster={(cluster) => {
             const { id, geometry, properties } = cluster;
             const points = properties.point_count;

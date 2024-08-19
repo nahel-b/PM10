@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, Text, Animated, Dimensions, Image, TouchableOpacity, ActivityIndicator,ScrollView } from 'react-native';
+import { View, Text, Dimensions, Image, TouchableOpacity, ActivityIndicator,ScrollView } from 'react-native';
 import { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { PanGestureHandler, GestureHandlerRootView, State, TextInput } from 'react-native-gesture-handler';
@@ -16,6 +16,7 @@ import { useTheme } from './context/ThemeContext';
 import MapView from "react-native-map-clustering";
 import { useRestaurant } from './context/RestaurantsContext';
 import { useNavigation } from '@react-navigation/native';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming,withSpring, runOnJS } from 'react-native-reanimated';
 
 import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
@@ -42,14 +43,45 @@ const reviewsData = [
 ]
 
 
-
 export default AvisViewPrincipal = () => {
-
     const { theme } = useTheme();
     const navigation = useNavigation();
+    const [modalVisible, setModalVisible] = useState(false);
+
+    // Valeur partagée pour l'animation d'opacité
+    const overlayOpacity = useSharedValue(0);
+    const modalTranslateY = useSharedValue(Dimensions.get('window').height);
+
+    const overlayStyle = useAnimatedStyle(() => {
+        return {
+            opacity: overlayOpacity.value,
+        };
+    });
+
+    const modalStyle = useAnimatedStyle(() => {
+        return {
+            transform: [{ translateY: modalTranslateY.value }],
+        };
+    });
+
+    const openModal = () => {
+        setModalVisible(true);
+        overlayOpacity.value = withTiming(0.8, { duration: 300 });
+        modalTranslateY.value = withSpring(0, { damping: 100, stiffness: 500 });
+    };
+
+    const closeModal = () => {
+        overlayOpacity.value = withTiming(0, { duration: 300 });
+        modalTranslateY.value = withSpring(Dimensions.get('window').height, { damping: 15 }, () => {
+            runOnJS(setModalVisible)(false);
+        });
+    };
+
+
+
     return (
         <View style={{flex : 1, backgroundColor : theme.background}}>
-            <SafeAreaView>
+            <SafeAreaView style = {{flex : 1}}>
                 <TouchableOpacity onPress={()=>{navigation.goBack()}}>
                     <View style={{alignItems : "flex-end", paddingHorizontal :20 }}>
                     <Ionicons name="close" size={30} color="gray" />
@@ -82,7 +114,7 @@ export default AvisViewPrincipal = () => {
 
 
 
-                <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate('NewAvisView')}>
+                <TouchableOpacity activeOpacity={0.8} onPress={openModal}>
                 <View style={{ backgroundColor: theme.blue, marginHorizontal: 20, justifyContent: 'center', alignItems: 'center', borderRadius: 10 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <FontAwesome name={"plus"} color={"white"} size={18} />
@@ -148,69 +180,27 @@ export default AvisViewPrincipal = () => {
 
 
 
-
-                <View style={{ backgroundColor : theme.light_gray,alignItems : "center",paddingVertical : 5,paddingHorizontal : 10,borderRadius : 5,marginTop : 10, marginHorizontal : 20,justifyContent : "flex-start"}}>
-                
-
-                <Text style={{width : "100%", fontFamily : "Inter-Bold", fontSize : 15,marginBottom : 0,color : theme.dark_gray}}>{"🍴Plat"}
-                </Text>
-
-                    <View style={{width : "100%", flexDirection : "row",justifyContent : "flex-start",alignItems : "flex-end"}}>
-                        
-
-                        <View style={{flexDirection : "row",marginLeft : 5,alignItems : "center"}}>
-                            {/* <FontAwesome name={"pencil"}  color={theme.gray}/> */}
-                            <TextInput numberOfLines={1}  placeholder='pasta...' style={{fontFamily : "Inter-SemiBold",marginLeft : 2}}/>
-                        </View>
-                    </View>
-                </View>
-
-
-                <View style={{ backgroundColor : theme.light_gray,alignItems : "center",paddingVertical : 5,paddingHorizontal : 10,borderRadius : 5,marginTop : 10, marginHorizontal : 20,justifyContent : "flex-start"}}>
-                
-
-                <Text style={{width : "100%", fontFamily : "Inter-Bold", fontSize : 15,marginBottom : 0,color : theme.dark_gray}}>{"🍴Plat"}
-                </Text>
-
-                    <View style={{width : "100%", flexDirection : "row",justifyContent : "flex-start",alignItems : "flex-end"}}>
-                        
-
-                        <View style={{flexDirection : "row",marginLeft : 5,alignItems : "center"}}>
-                            {/* <FontAwesome name={"pencil"}  color={theme.gray}/> */}
-                            <TextInput textContentType="" numberOfLines={1}  placeholder='pasta...' style={{fontFamily : "Inter-SemiBold",marginLeft : 2}}/>
-                        </View>
-                    </View>
-                </View>
-
-
-
-
-
-
-                <View style={{ backgroundColor : theme.light_gray,alignItems : "center",paddingVertical : 5,paddingHorizontal : 10,borderRadius : 5,marginTop : 10, marginHorizontal : 20,justifyContent : "flex-start"}}>
-                
-
-                <Text style={{width : "100%", fontFamily : "Inter-Bold", fontSize : 15,marginBottom : 0,color : theme.dark_gray}}>{"💬Avis"}
-                </Text>
-
-                    <View style={{width : "100%", flexDirection : "row",justifyContent : "flex-start",alignItems : "flex-end"}}>
-                        
-
-                        <View style={{flexDirection : "row",marginLeft : 5, paddingBottom : 20,alignItems : "center"}}>
-                            {/* <FontAwesome name={"pencil"}  color={theme.gray}/> */}
-                            <TextInput numberOfLines={2} placeholder='Très bon... ' style={{fontFamily : "Inter-SemiBold",marginLeft : 2, height : "200%"}}/>
-                        </View>
-                    </View>
-                </View>
-
                 {/* <View style={{ marginHorizontal : 20, borderBottomColor: theme.light_gray, borderBottomWidth: 2, marginVertical: 0 }} /> */}
 
 
-                <TouchableOpacity activeOpacity={0.8}>
+                {/* <TouchableOpacity activeOpacity={0.8}>
                     <View style={{backgroundColor : theme.text,margin : 20,justifyContent : "center",alignItems : "center",borderRadius : 10}}>
                         <Text style={{fontFamily : "Inter-Bold", fontSize : 15,color : theme.background,padding : 10}}>Envoyer</Text>
                     </View>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
+
+                 {/* Overlay */}
+                {modalVisible && (
+                    <Animated.View 
+                    style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: -100, backgroundColor: 'black' }, overlayStyle]} />
+                )}
+
+                {/* Modal */}
+                {modalVisible && (
+                    <Animated.View style={[{ position: 'absolute', left: 0, right: 0, height: '100%', backgroundColor: 'transparent' }, modalStyle]}>
+                        <NewAvisView onClose={closeModal} />
+                    </Animated.View>
+                )}
             </SafeAreaView>
         </View> 
     )
