@@ -19,7 +19,7 @@ export const Colors = {
         green : "rgb(91,169,63)", 
         light_gray :  '#3B3E3F',
         dark_gray : "rgb(200,200,200)",
-        gray : "#3B3E3F",
+        gray : "rgb(134,135,146)",
         background : "#1c1c1e",
         text : "#fff",
         text_light: '#ccc',

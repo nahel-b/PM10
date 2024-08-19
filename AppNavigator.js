@@ -15,7 +15,7 @@ const Stack = createStackNavigator();
 
 export default function AppNavigator({ isAuthenticated }) {
   return (
-    <NavigationContainer independent={true}>
+    <NavigationContainer>
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
@@ -34,6 +34,10 @@ export default function AppNavigator({ isAuthenticated }) {
             <Stack.Screen
               name="AvisView"
               component={AvisView}
+              options={{
+                ...TransitionPresets.ModalPresentationIOS, // Applique l'effet modal
+               
+              }}
             />
             <Stack.Screen
               name="ReglageView"

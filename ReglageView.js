@@ -122,7 +122,7 @@ export default AvisView = ({}) => {
                     position: 'absolute',
                     width: 33,
                     height: '80%',
-                    backgroundColor: theme.gray, // Couleur de l'indicateur
+                    backgroundColor: theme.background, // Couleur de l'indicateur
                     borderRadius: 8,
 
 
@@ -194,7 +194,7 @@ export default AvisView = ({}) => {
 
                         <View style={{flexDirection : "row",marginLeft : 5, paddingBottom : 20,alignItems : "center"}}>
                             {/* <FontAwesome name={"pencil"}  color={theme.gray}/> */}
-                            <TextInput numberOfLines={2} placeholder='Très bon... ' style={{fontFamily : "Inter-SemiBold",color : theme.text_light, marginLeft : 2, height : "200%"}}/>
+                            <TextInput numberOfLines={2} placeholderTextColor={theme.gray} placeholder='Très bon... ' style={{fontFamily : "Inter-SemiBold",color : theme.text_light, marginLeft : 2, height : "200%"}}/>
                         </View>
                     </View>
                 </View>

@@ -80,10 +80,9 @@ export default AvisViewPrincipal = () => {
 
 
     return (
-        <View style={{flex : 1, backgroundColor : theme.background}}>
-            <SafeAreaView style = {{flex : 1}}>
+        <View style={{flex : 1, backgroundColor : theme.background }}>
                 <TouchableOpacity onPress={()=>{navigation.goBack()}}>
-                    <View style={{alignItems : "flex-end", paddingHorizontal :20 }}>
+                    <View style={{alignItems : "flex-end", paddingHorizontal :20, paddingTop : 20 }}>
                     <Ionicons name="close" size={30} color="gray" />
                     </View>
                 </TouchableOpacity>
@@ -114,7 +113,7 @@ export default AvisViewPrincipal = () => {
 
 
 
-                <TouchableOpacity activeOpacity={0.8} onPress={openModal}>
+                <TouchableOpacity activeOpacity={0.8} onPress={(openModal)}>
                 <View style={{ backgroundColor: theme.blue, marginHorizontal: 20, justifyContent: 'center', alignItems: 'center', borderRadius: 10 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <FontAwesome name={"plus"} color={"white"} size={18} />
@@ -201,7 +200,6 @@ export default AvisViewPrincipal = () => {
                         <NewAvisView onClose={closeModal} />
                     </Animated.View>
                 )}
-            </SafeAreaView>
         </View> 
     )
 }
