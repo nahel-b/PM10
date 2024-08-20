@@ -48,10 +48,8 @@ export default function AppNavigator({ isAuthenticated }) {
               name="NewAvisView"
               component={NewAvisView}
               options={{
-                presentation: 'modal', // Définit cette screen comme un modal
-                ...TransitionPresets.ModalSlideFromBottomIOS, // Applique l'effet modal
-                cardStyle: { backgroundColor: 'transparent' }, // Fond transparent
-                cardOverlayEnabled: true, // Active l'overlay sombre
+                ...TransitionPresets.ModalPresentationIOS, // Applique l'effet modal
+               
               }}
             />
           </>

@@ -88,6 +88,11 @@ const Principal = ({ navigation }) => {
   }, []);
 
   const handleRetry = () => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      console.log('Connection type', state.isConnected);
+      setIsConnected(state.isConnected);
+    });
+    unsubscribe();
     checkAuthentication();
   };
 

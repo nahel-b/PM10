@@ -46,36 +46,10 @@ const reviewsData = [
 export default AvisViewPrincipal = () => {
     const { theme } = useTheme();
     const navigation = useNavigation();
-    const [modalVisible, setModalVisible] = useState(false);
+    
+    
 
-    // Valeur partagée pour l'animation d'opacité
-    const overlayOpacity = useSharedValue(0);
-    const modalTranslateY = useSharedValue(Dimensions.get('window').height);
-
-    const overlayStyle = useAnimatedStyle(() => {
-        return {
-            opacity: overlayOpacity.value,
-        };
-    });
-
-    const modalStyle = useAnimatedStyle(() => {
-        return {
-            transform: [{ translateY: modalTranslateY.value }],
-        };
-    });
-
-    const openModal = () => {
-        setModalVisible(true);
-        overlayOpacity.value = withTiming(0.8, { duration: 300 });
-        modalTranslateY.value = withSpring(0, { damping: 100, stiffness: 500 });
-    };
-
-    const closeModal = () => {
-        overlayOpacity.value = withTiming(0, { duration: 300 });
-        modalTranslateY.value = withSpring(Dimensions.get('window').height, { damping: 15 }, () => {
-            runOnJS(setModalVisible)(false);
-        });
-    };
+    
 
 
 
@@ -113,11 +87,11 @@ export default AvisViewPrincipal = () => {
 
 
 
-                <TouchableOpacity activeOpacity={0.8} onPress={(openModal)}>
+                <TouchableOpacity activeOpacity={0.8} onPress={()=>{navigation.navigate("NewAvisView")}}>
                 <View style={{ backgroundColor: theme.blue, marginHorizontal: 20, justifyContent: 'center', alignItems: 'center', borderRadius: 10 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <FontAwesome name={"plus"} color={"white"} size={18} />
-                    <Text style={{ marginLeft: 5, fontFamily: 'Inter-Bold', fontSize: 15, color: 'white', paddingVertical: 10 }}>Ajouter un plat</Text>
+                    <FontAwesome name={"plus"} color={"white"} size={15} />
+                    <Text style={{ marginLeft: 5, fontFamily: 'Inter-Bold', fontSize: 14, color: 'white', paddingVertical: 12 }}>Ajouter un plat</Text>
                     </View>
                 </View>
                 </TouchableOpacity>
@@ -178,28 +152,6 @@ export default AvisViewPrincipal = () => {
 
 
 
-
-                {/* <View style={{ marginHorizontal : 20, borderBottomColor: theme.light_gray, borderBottomWidth: 2, marginVertical: 0 }} /> */}
-
-
-                {/* <TouchableOpacity activeOpacity={0.8}>
-                    <View style={{backgroundColor : theme.text,margin : 20,justifyContent : "center",alignItems : "center",borderRadius : 10}}>
-                        <Text style={{fontFamily : "Inter-Bold", fontSize : 15,color : theme.background,padding : 10}}>Envoyer</Text>
-                    </View>
-                </TouchableOpacity> */}
-
-                 {/* Overlay */}
-                {modalVisible && (
-                    <Animated.View 
-                    style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: -100, backgroundColor: 'black' }, overlayStyle]} />
-                )}
-
-                {/* Modal */}
-                {modalVisible && (
-                    <Animated.View style={[{ position: 'absolute', left: 0, right: 0, height: '100%', backgroundColor: 'transparent' }, modalStyle]}>
-                        <NewAvisView onClose={closeModal} />
-                    </Animated.View>
-                )}
         </View> 
     )
 }
