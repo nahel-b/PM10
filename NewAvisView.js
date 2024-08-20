@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, FlatList, TouchableOpacity } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
@@ -15,9 +15,8 @@ const NewAvisView = () => {
     const [suggestions, setSuggestions] = useState([]);
     const [selectedPlat, setSelectedPlat] = useState('');
 
-    const [isGlobalPlat, setIsGlobalPlat] = useState(false);   
-
     const platsPredefinis = ['🍕 Pizza', '🍝 Pasta', '🥗 Salad', '🍔 Burger', '🍣 Sushi'];
+
 
     const platsGlobal = [
         '🍕 Pizza',
@@ -179,45 +178,43 @@ const NewAvisView = () => {
         '🥥 Coconut Ice Cream'
       ];
 
+
+    useEffect(() => {
+        setSuggestions(platsPredefinis)
+    }, []);
+
     const handleInputChange = (text) => {
         setInputValue(text);
         console.log("change");
 
-        if(!isGlobalPlat){
-        const filteredSuggestions = platsPredefinis.filter((plat) =>
-            plat.toLowerCase().includes(text.toLowerCase())
-        );
-
-        if (text.length > 0 && !platsPredefinis.includes(text)) {
-            filteredSuggestions.push('Ajouter un plat à ce restaurant');
-        }
-
-        setSuggestions(filteredSuggestions);}
-        else {
             const filteredSuggestions = platsGlobal.filter((plat) =>
             plat.toLowerCase().includes(text.toLowerCase())
         );
         if (text.length > 0 && !platsPredefinis.includes(text)) {
             filteredSuggestions.push('Ajouter ce plat');
+            setSuggestions(filteredSuggestions);
+
         }
-        setSuggestions(filteredSuggestions);
-    }
+        else 
+        {
+            setSuggestions(platsPredefinis);
+            console.log("setSuggestions");
+        }
+    
     };
 
     const handleSuggestionPress = (suggestion) => {
-        if (suggestion === 'Ajouter un plat à ce restaurant') {
+        if (suggestion === 'Ajouter ce plat') {
 
             console.log("Ajouter un plat à ce restaurant");
-            setIsGlobalPlat(true);
-            // setSelectedPlat(inputValue);
             
 
-
-        } else {
+        } 
+        else 
+        {
             setSelectedPlat(suggestion);
+            console.log("Plat choisi : ", suggestion);
         }
-        setTimeout(() => {
-        handleInputChange(inputValue), 100});
         // setInputValue('');
         // setSuggestions([]);
     };
@@ -247,26 +244,27 @@ const NewAvisView = () => {
                 </Text>
                 <TextInput
                     placeholder='pasta...'
-                    style={{ fontFamily: "Inter-SemiBold", marginLeft: 6, marginTop: 0 }}
+                    style={{ fontFamily: "Inter-SemiBold",color : theme.text, marginLeft: 6, marginTop: 0 }}
                     value={inputValue}
                     onChangeText={handleInputChange}
                 />
                 
             </View>
             {
-                suggestions.length > 1 && inputValue.length > 0 && !isGlobalPlat ? (
+                inputValue.length === 0 ? (
                     <Text style={{ marginHorizontal: 22, color: theme.dark_gray, marginTop: 5,marginBottom : -2, fontFamily: "Inter-SemiBold" }}>
-                        Plat de ce restaurant
+                        Plats déjà ajoutés à ce restaurant :
+                    </Text>
+                ) : 
+
+                suggestions.length > 1 && inputValue.length > 0 ? (
+                    <Text style={{ marginHorizontal: 22, color: theme.dark_gray, marginTop: 5,marginBottom : -2, fontFamily: "Inter-SemiBold" }}>
+                        Tous les plats :
                     </Text>
                 ) :
-                (
-                    isGlobalPlat && inputValue.length > 0 && suggestions.length > 1 ? (
-                    
-                    <Text style={{ marginHorizontal: 22, color: theme.dark_gray, marginTop: 5,marginBottom : -2, fontFamily: "Inter-SemiBold" }}>
-                        Plat de l'appli
-                    </Text>
-                    ) : (
-                        isGlobalPlat ? (
+
+                ((
+                        suggestions.length == 1 && inputValue.length > 0 ? (
                             <Text style={{ marginHorizontal: 22, color: theme.red, marginTop: 5,marginBottom : -2, fontFamily: "Inter-SemiBold" }}>
                                 Ce plat n'existe pas dans l'appli, ameliore l'appli en l'ajoutant 😁
                             </Text>
@@ -284,7 +282,7 @@ const NewAvisView = () => {
                 //         null
                 // )
             }
-            {inputValue.length > 0 && (
+            {(
     <FlatList
         data={ suggestions}
         keyExtractor={(item, index) => index.toString()}
@@ -293,13 +291,21 @@ const NewAvisView = () => {
                 <View style={{ marginHorizontal: 20,marginBottom : 4, borderColor : theme.gray,borderWidth : 1 ,backgroundColor : theme.light_gray,borderRadius : 10  }}>
                     <View style={{ padding: 10,flexDirection: 'row',alignItems : "center"}}>
                     {
-                        (index === suggestions.length - 1)  ? (
+                        (index === suggestions.length - 1) && inputValue.length > 0  ? (
+                            <>
                             <FontAwesome name="plus-circle" size={16} color={theme.dark_gray} style={{marginRight : 5  }} />
-                        ) : null
+                            <Text style={{  color: theme.text,fontFamily : "Inter-Medium" }}>
+                                {"Ajouter '"}
+                                <Text style={{  color: theme.text,fontFamily : "Inter-Black" }}>{inputValue}</Text>
+                                {"' à l'appli"} 
+                            </Text>
+                            </>
+                        ) : 
+                        <Text style={{  color: theme.text,fontFamily : "Inter-Bold" }}>
+                            {item}
+                        </Text>
                     }
-                    <Text style={{  color: theme.text,fontFamily : "Inter-Bold" }}>
-                        {item}
-                    </Text>
+                    
                     </View>
                 </View>
             </TouchableOpacity>
@@ -310,7 +316,7 @@ const NewAvisView = () => {
             marginTop: 5,
             zIndex: 1,
         }}
-        scrollEnabled={(!isGlobalPlat && suggestions.length > 4) || (isGlobalPlat && platsGlobal.length > 4) ? true : false}
+        scrollEnabled={ suggestions.length > 4 ? true : false}
         contentContainerStyle={{ flexGrow: 1 }}
     />
 )}
