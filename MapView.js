@@ -1,5 +1,11 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, Text, Animated, Dimensions, Image, TouchableOpacity, ActivityIndicator,ScrollView } from 'react-native';
+import { View, Text, Dimensions, Image, TouchableOpacity, ActivityIndicator,ScrollView } from 'react-native';
+
+import { Animated as RNAnimated } from 'react-native';
+
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+
+
 import { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { PanGestureHandler, GestureHandlerRootView, State, TextInput } from 'react-native-gesture-handler';
@@ -123,7 +129,7 @@ const App = () => {
     const [storedLocation, setStoredLocation] = useState(null);
     const [markers, setMarkers] = useState([]);
     const { theme, themeName } = useTheme();
-    const animatedHeight = useRef(new Animated.Value(0)).current;
+    const animatedHeight = useRef(new RNAnimated.Value(0)).current;
     const markerPressedRef = useRef(false);
     const { restaurants } = useRestaurant();
     const searchInputRef = useRef(null);
@@ -219,7 +225,7 @@ const App = () => {
   
       if (!isModalVisible) {
         setIsModalVisible(true);
-        Animated.timing(animatedHeight, {
+        RNAnimated.timing(animatedHeight, {
           toValue: Dimensions.get('window').height / 2,
           duration: 300,
           useNativeDriver: false,
@@ -228,7 +234,7 @@ const App = () => {
     };
   
     const closeModal = () => {
-      Animated.timing(animatedHeight, {
+        RNAnimated.timing(animatedHeight, {
         toValue: 0,
         duration: 300,
         useNativeDriver: false,
@@ -405,13 +411,13 @@ const App = () => {
         
     
   
-        {selectedMarker && (
+        {/* {selectedMarker && (
           <ModalMarker
             selectedMarker={selectedMarker}
             closeModal={closeModal}
             animatedHeight={animatedHeight}
           />
-        )}
+        )} */}
   
         {/* Bouton de localisation */}
         <View style={{
@@ -455,27 +461,134 @@ const images = {
 };
 
 
+
+
+
 const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
     const image = images[selectedMarker.image];
     const { theme } = useTheme();
 
     const insets = useSafeAreaInsets();
-
-
     const navigation = useNavigation();
+
+
+    const [dishData, setDishData] = useState([]);
+    const [selectedDish, setSelectedDish] = useState(null);
+    const translateX = useSharedValue(0);
+
+    const backButtonOpacity = useSharedValue(0);
+
+    const [isModalExpanded, setIsModalExpanded] = useState(false);
+
+  // Fonction pour déclencher le fade-in
+    const showBackButton = () => {
+        backButtonOpacity.value = withTiming(1, { duration: 500 });
+    };
+
+    const hideBackButton = () => {
+        backButtonOpacity.value = withTiming(0, { duration: 200 });
+    };
+
+    const backButtonStyle = useAnimatedStyle(() => {
+        return {
+        opacity: backButtonOpacity.value,
+        };
+    });
+
+    
+
+
+    const expandModal = () => {
+        animatedHeight.value = 
+        RNAnimated.timing(animatedHeight, { 
+            toValue: Dimensions.get('window').height * 3 / 4,
+            duration: 300,
+            useNativeDriver: false,
+          }).start();
+          setIsModalExpanded(true);
+    };
+
+    const collapseModal = () => {
+        animatedHeight.value =
+        RNAnimated.timing(animatedHeight, { 
+            toValue: Dimensions.get('window').height / 2,
+            duration: 300,
+            useNativeDriver: false,
+          }).start();
+            setIsModalExpanded(false);
+    }
+
+    useEffect(() => {
+        const groupedData = selectedMarker.reviews.reduce((acc, review) => {
+            if (!acc[review.dish]) {
+                acc[review.dish] = { reviews: [], prices: [] };
+            }
+            acc[review.dish].reviews.push(review);
+            acc[review.dish].prices.push(review.price);
+            return acc;
+        }, {});
+
+        const dishDataArray = Object.keys(groupedData).map(dish => {
+            const prices = groupedData[dish].prices;
+            const minPrice = Math.min(...prices);
+            const maxPrice = Math.max(...prices);
+            return {
+                dish,
+                emoji : selectedMarker.reviews.find(review => review.dish === dish).emoji,
+                nbAVis : groupedData[dish].reviews.length,
+                priceRange: minPrice === maxPrice ? `${minPrice}€` : `${minPrice}€-${maxPrice}€`,
+                reviews: groupedData[dish].reviews
+            };
+        });
+        console.log(dishDataArray);
+        setDishData(dishDataArray);
+    }, [selectedMarker]);
+
+
+
+
+    const handleDishPress = (dish) => {
+        setSelectedDish(dish);
+        translateX.value = withTiming(-Dimensions.get('window').width, { duration: 300 });
+        showBackButton();
+        expandModal();
+    };
+
+    const handleBackPress = () => {
+        translateX.value = withTiming(0, { duration: 300 }, () => {});
+        hideBackButton();
+        collapseModal();
+    };
+
+    const animatedStyle = useAnimatedStyle(() => {
+        return {
+            transform: [{ translateX: translateX.value }],
+        };
+    });
+
+
+
 
     return (
       <PanGestureHandler
         onGestureEvent={(event) => {
-          animatedHeight.setValue(Dimensions.get('window').height / 2 - event.nativeEvent.translationY);
+
+          animatedHeight.setValue(
+            (isModalExpanded ? 
+            (Dimensions.get('window').height * 3 / 4) :
+            (Dimensions.get('window').height / 2 ))
+            
+            - event.nativeEvent.translationY);
         }}
         onHandlerStateChange={(event) => {
           if (event.nativeEvent.state === State.END) {
             if (event.nativeEvent.translationY > 50) {
               closeModal();
             } else {
-              Animated.timing(animatedHeight, { 
-                toValue: Dimensions.get('window').height / 2,
+                RNAnimated.timing(animatedHeight, { 
+
+                toValue: ( isModalExpanded ?Dimensions.get('window').height *  3/ 4 :  Dimensions.get('window').height / 2),
+                
                 duration: 300,
                 useNativeDriver: false,
               }).start();
@@ -483,7 +596,7 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
           }
         }}
       >
-        <Animated.View
+        <RNAnimated.View
           style={{
             position: 'absolute',
             bottom: 0,
@@ -588,11 +701,123 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
             <View style={{ borderBottomColor: theme.light_gray, borderBottomWidth: 2, marginBottom: 5,marginTop : 5 }} /> 
             </View>
           {/* Section pour afficher les avis */}
+
+
+
+
+        <View style={{flex : 1 }} >
+
+          <TouchableOpacity 
+                onPress={handleBackPress} 
+                style={{
+                    zIndex : 2,}}
+            >
+                <Animated.View style={[backButtonStyle,{
+
+                
+                    position: 'absolute', 
+                    top: 0, 
+                    left: 20, 
+                    flexDirection: 'row', 
+                    alignItems: 'center' ,
+                    zIndex : 2,
+                    backgroundColor : theme.light_gray,
+                    padding : 5,
+                    borderRadius : 10,
+                    
+                }]}>
+                <Ionicons name="chevron-back" size={15} color={theme.dark_gray} />
+                <Text style={{ zIndex : 2, fontFamily: 'Inter-SemiBold', fontSize: 11, color: theme.dark_gray }}>
+                 
+                </Text>
+                </Animated.View>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+                onPress={handleBackPress} 
+                style={{
+                    zIndex : 2,}}
+            >
+                <Animated.View style={[backButtonStyle,{
+
+                
+                    position: 'absolute', 
+                    top: 0, 
+                    alignSelf : "center", 
+                    flexDirection: 'row', 
+                    alignItems: 'center' ,
+                    zIndex : 2,
+                    
+                }]}>
+                <Text style={{ zIndex : 2, fontFamily: 'Inter-SemiBold', fontSize: 16, color: theme.text }}>
+                    {selectedDish.emoji} {selectedDish.dish}
+                </Text>
+                </Animated.View>
+            </TouchableOpacity>
+
+
+
           <ScrollView style={{ paddingTop: 10, }}                     
           contentContainerStyle={{ paddingBottom: insets.bottom + 10 }} // Ajuste la valeur pour éviter les bords arrondis/encoches
           >
-            <View style={{ paddingHorizontal: 20 }}>
-            {selectedMarker.reviews && selectedMarker.reviews.map((review, index) => (
+            <Animated.View style={[animatedStyle,{flexDirection : 'row', width : '200%'}]}>
+
+
+
+                        <View style={{ width: '50%' }}>
+                            {/* Vue initiale : Liste des plats */}
+                            {dishData.map((dishItem, index) => (
+                                // <TouchableOpacity key={index} onPress={() => handleDishPress(dishItem)}>
+                                //     <View style={{ marginBottom: 15, backgroundColor: theme.light_gray, padding: 10, borderRadius: 10 }}>
+                                //         <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 15, color: theme.text }}>
+                                //             {dishItem.dish} - {dishItem.priceRange}
+                                //         </Text>
+                                //     </View>
+                                // </TouchableOpacity>
+                                <TouchableOpacity key={index} onPress={() => handleDishPress(dishItem)}>
+                                <View key={index} style={{ marginBottom: 15, backgroundColor : theme.light_gray,paddingVertical : 8,paddingHorizontal : 8,borderRadius : 10,marginHorizontal : 15 }}>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <View>
+                                            <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 15, color: theme.text }}>
+                                                {dishItem.emoji} {dishItem.dish}
+                                            </Text>
+                                        </View>
+                                        <View style={{ backgroundColor: theme.blue, padding: 2,paddingHorizontal : 4, borderRadius: 5, marginLeft: 3, alignItems: 'center' }}>
+                                            <Text style={{ color: "white", fontFamily: 'Inter-SemiBold', fontSize: 13 }}>
+                                                {dishItem.priceRange}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    <View style={{flexDirection : "row",alignItems : "center"}}>
+                                        <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 11, color: 'gray', textDecorationLine: 'none' }}>
+                                            {dishItem.nbAVis + " avis"}
+                                        </Text>    
+                                        <Ionicons name="chevron-forward" size={20} color="gray" />
+                                    
+                                    </View>
+
+                                </View>
+
+                                {/* <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: 'gray', marginVertical: 5 }}>
+                                {review.comment}
+                                </Text> */}
+
+                                </View>
+                                </TouchableOpacity>
+                                
+                            ))}
+                        </View>
+
+            
+
+
+
+
+
+            <View style={{ paddingHorizontal: 20,width : "50%",marginTop : 20 }}>
+            
+            {selectedMarker.reviews && selectedDish && selectedMarker.reviews.filter(review => review.dish == selectedDish.dish  ).map((review, index) => (
               <View key={index} style={{ marginBottom: 15, backgroundColor : theme.light_gray,padding : 5,paddingHorizontal : 8,borderRadius : 10 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -632,8 +857,19 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
               </View>
             ))}
             </View>
+
+            </Animated.View>
           </ScrollView>
-        </Animated.View>
+
+          </View>
+
+
+
+
+
+
+
+        </RNAnimated.View>
       </PanGestureHandler>
     );
   };
