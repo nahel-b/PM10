@@ -8,11 +8,13 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome from  '@expo/vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaFrameContext, SafeAreaView } from 'react-native-safe-area-context';
 import { ToastObj } from './Utils';
 import { Rating } from 'react-native-ratings'; // Importer le composant Rating
 import { useTheme } from './context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
+
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 import MapView from "react-native-map-clustering";
@@ -126,6 +128,9 @@ const App = () => {
     const { restaurants } = useRestaurant();
     const searchInputRef = useRef(null);
     const [mapKey, setMapKey] = useState('map1');
+
+    const insets = useSafeAreaInsets();
+
 
   
     useEffect(() => {
@@ -313,7 +318,7 @@ const App = () => {
                 }}>
                   <Image
                     source={images[marker.image]}
-                    style={{ width: 25, height: 25, top: -16, position: "absolute" }}
+                    style={{ width: 50, height: 50, top: -40, left : 5, position: "absolute" }}
                   />
   
                   <View style={{ position: "absolute", top: -10, right: -5, padding: 4, backgroundColor: theme.blue, borderRadius: 5 }}>
@@ -375,7 +380,7 @@ const App = () => {
           </TouchableOpacity>
         </View>
 
-        <View style={{ flexDirection : "row", alignSelf : "center",alignItems : "center",position : "absolute",top : 60, width : "90%"}}>
+        <View style={{ flexDirection : "row", alignSelf : "center",alignItems : "center",position : "absolute",top : insets.top, width : "90%"}}>
             <View style={{flexDirection : "row",borderRadius : 15,backgroundColor :  theme.background,
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 1 },
@@ -445,12 +450,17 @@ const App = () => {
 const images = {
   maison: require('./assets/images/logo_maison.png'),
   cafe: require('./assets/images/logo_cafe.png'),
+  tacos : require('./assets/images/logo_tacos.png'),
+  indien : require('./assets/images/logo_indien.png'),
 };
 
 
 const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
     const image = images[selectedMarker.image];
     const { theme } = useTheme();
+
+    const insets = useSafeAreaInsets();
+
 
     const navigation = useNavigation();
 
@@ -495,13 +505,12 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
           <Image
             source={image}
             style={{
-              width: 100,
-              height: 100,
+              width: 130,
+              height: 130,
               alignSelf: 'flex-start',
               position: 'absolute',
-              top: -50,
+              top: -90,
               left: 10,
-              borderRadius: 20,
               backgroundColor: 'transparent',
               borderWidth: 0,
               borderColor: 'white',
@@ -579,7 +588,9 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
             <View style={{ borderBottomColor: theme.light_gray, borderBottomWidth: 2, marginBottom: 5,marginTop : 5 }} /> 
             </View>
           {/* Section pour afficher les avis */}
-          <ScrollView style={{ paddingTop: 10, }}>
+          <ScrollView style={{ paddingTop: 10, }}                     
+          contentContainerStyle={{ paddingBottom: insets.bottom + 10 }} // Ajuste la valeur pour éviter les bords arrondis/encoches
+          >
             <View style={{ paddingHorizontal: 20 }}>
             {selectedMarker.reviews && selectedMarker.reviews.map((review, index) => (
               <View key={index} style={{ marginBottom: 15, backgroundColor : theme.light_gray,padding : 5,paddingHorizontal : 8,borderRadius : 10 }}>

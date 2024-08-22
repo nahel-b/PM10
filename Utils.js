@@ -2,11 +2,17 @@ import Toast from 'react-native-toast-message';
 import React from 'react';
 import { View, Text, StyleSheet,ActivityIndicator, TouchableOpacity, Modal, ScrollView, TextInput, Image, Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+
+// const insets = useSafeAreaInsets();
 
 
 //get the height of non safe area
 
 const toastConfig = {
+
+
   tomatoToast: ({ text1, props }) => (
     //TODO : ajuster avec l'encoche la safeview la margin
     <View style={{margin : props.position == "bottom" ? 0 : 60,height: 40, backgroundColor: props.theme.button_background, justifyContent: "center", borderRadius: 20, paddingHorizontal: 10,
@@ -32,6 +38,7 @@ const toastConfig = {
 
 
 export function ToastNotif(text, iconName, theme,iconColor,visibilityTime,position = 'bottom',activityIndicator = false) {
+
 
   Toast.show({
     type: 'tomatoToast',

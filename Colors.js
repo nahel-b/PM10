@@ -6,7 +6,7 @@ export const Colors = {
         green : "rgb(91,169,63)", 
         light_gray : "rgb(236,239,241)",
         dark_gray : 'rgb(134,135,146)',
-        gray : "#D3D3D3",
+        gray : "#bbb",
         background : "rgb(255,255,255)",
         text : "rgb(0,0,0)",
         text_light : "gray",

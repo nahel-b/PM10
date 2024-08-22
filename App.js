@@ -29,7 +29,7 @@ const Principal = ({ navigation }) => {
   const loadAllRestaurants = async () => {
     try {
       await loadTheme();
-      ToastNotif("Récupération des restaurants...", "loading-cricle", { button_background: theme.background, text: theme.text }, theme.text, 10000, "top", true);
+      ToastNotif("Récupération des restaurants...", "loading-cricle", { button_background: theme.background, text: theme.text }, theme.text, 10000, "bottom", true);
       const response = await getAllRestaurants();
       setRestaurants(response); 
       ToastHide(); 

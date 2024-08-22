@@ -9,7 +9,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome from  '@expo/vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ToastObj } from './Utils';
+import { ToastObj, ToastNotif } from './Utils';
 import { Rating } from 'react-native-ratings'; // Importer le composant Rating
 import { useTheme } from './context/ThemeContext';
 
@@ -20,6 +20,11 @@ import Animated, { useSharedValue, useAnimatedStyle, withTiming,withSpring, runO
 
 import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
+
+
+import CustomModal from './ModalMenue';
+
+
 
 import NewAvisView from './NewAvisView';
 
@@ -48,7 +53,16 @@ export default AvisViewPrincipal = () => {
     const navigation = useNavigation();
     
     
+    const [isModalVisible, setIsModalVisible] = useState(false);
 
+    const openModal = () => {
+      setIsModalVisible(true);
+    };
+  
+    const closeModal = () => {
+      setIsModalVisible(false);
+    };
+  
     
 
 
@@ -68,14 +82,16 @@ export default AvisViewPrincipal = () => {
                 <View style={{ marginHorizontal : 20, borderBottomColor: theme.light_gray, borderBottomWidth: 2, marginVertical: 15 }} />
 
                 <View style={{flexDirection:"column", justifyContent:"flex-start" ,alignItems : "flex-start",padding : 5,borderRadius : 5, marginHorizontal : 20, backgroundColor : theme.light_gray}}>
+                    
+                    
                     <Text style={{fontFamily : "Inter-Bold", fontSize : 15,color : theme.dark_gray}}>
-                    🔖 Note général du restaurant</Text>
+                     Note général du restaurant</Text>
                 <Rating
                     type='custom'
                     ratingColor={"#FFC300"}
                     ratingBackgroundColor={theme.dark_gray}
                     startingValue={5}
-                    imageSize={35}
+                    imageSize={30}
                     
                     tintColor={theme.light_gray}
                     style={{ marginLeft: 0 }}
@@ -87,11 +103,15 @@ export default AvisViewPrincipal = () => {
 
 
 
-                <TouchableOpacity activeOpacity={0.8} onPress={()=>{navigation.navigate("NewAvisView")}}>
+                <TouchableOpacity activeOpacity={0.8} onPress={()=>
+                    {
+                        //navigation.navigate("NewAvisView")
+                        ToastNotif("Ajout d'un avis","check-circle",theme,"green",2000)
+                        }}>
                 <View style={{ backgroundColor: theme.blue, marginHorizontal: 20, justifyContent: 'center', alignItems: 'center', borderRadius: 10 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <FontAwesome name={"plus"} color={"white"} size={15} />
-                    <Text style={{ marginLeft: 5, fontFamily: 'Inter-Bold', fontSize: 14, color: 'white', paddingVertical: 12 }}>Ajouter un plat</Text>
+                    <FontAwesome name={"plus"} color={"white"} size={14} />
+                    <Text style={{ marginLeft: 5, fontFamily: 'Inter-Bold', fontSize: 13.5, color: theme.background, paddingVertical: 12 }}>Ajouter un plat</Text>
                     </View>
                 </View>
                 </TouchableOpacity>
@@ -123,9 +143,11 @@ export default AvisViewPrincipal = () => {
                                 </View>
                             </View>
                             <View>
+                                <TouchableOpacity onPress={openModal}>
                                 <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 11, color: 'gray', textDecorationLine: 'none' }}>
                                     <Feather name="more-horizontal" size={25} color="gray" />
                                 </Text>
+                                </TouchableOpacity>
                             </View>
                         </View>
 
@@ -149,7 +171,12 @@ export default AvisViewPrincipal = () => {
                     </View>
                 </ScrollView>
 
-
+                <CustomModal
+        visible={isModalVisible}
+        onClose={closeModal}
+        onDeleteForEveryone={()=>{}}
+        onDeleteForMe={()=>{}}
+      />
 
 
         </View> 
