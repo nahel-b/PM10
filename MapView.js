@@ -22,6 +22,7 @@ import { useNavigation } from '@react-navigation/native';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import  CustomModal from './ModalMenue';
 
 import MapView from "react-native-map-clustering";
 import { useRestaurant } from './context/RestaurantsContext';
@@ -314,7 +315,7 @@ const App = () => {
                 onPress={() => handleMarkerPress(marker)}
                 zIndex={selectedMarker ? (selectedMarker.id == marker.id ? 3 : 2) : 2}
               >
-                <View style={{
+                <Animated.View style={{
                   borderRadius: 5,
                   shadowColor: '#000',
                   opacity: selectedMarker ? (selectedMarker.id != marker.id ? 0.3 : 1) : 1,
@@ -343,7 +344,7 @@ const App = () => {
                     tintColor={theme.background}
                     style={{ marginLeft: 0 }}
                   />
-                </View>
+                </Animated.View>
               </Marker>
             ))
           }
@@ -480,9 +481,34 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
 
     const [isModalExpanded, setIsModalExpanded] = useState(false);
 
+    const [isReviewMenueModalVisible, setIsReviewMenueModalVisible] = useState(false);
+    const [isMenueModalVisible, setIsMenueModalVisible] = useState(false);
+
+    
+    const openMenueModal = () => {
+        setIsMenueModalVisible(true);
+      };
+    
+      const closeMenueModal = () => {
+        setIsMenueModalVisible(false);
+      };
+
+      const openReviewMenueModal = () => {
+        setIsReviewMenueModalVisible(true);
+        };
+    const closeReviewMenueModal = () => {
+        setIsReviewMenueModalVisible(false);
+    };
+
+
+    useEffect(() => {
+        handleBackPress();
+    }, [selectedMarker]);
+
+
   // Fonction pour déclencher le fade-in
     const showBackButton = () => {
-        backButtonOpacity.value = withTiming(1, { duration: 500 });
+        backButtonOpacity.value = withTiming(1, { duration: 300 });
     };
 
     const hideBackButton = () => {
@@ -631,7 +657,7 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
           />
           <View style={{justifyContent : "flex-end", alignItems: 'center',paddingTop : 10,paddingRight : 10, flexDirection : "row" }}>
           
-          <TouchableOpacity onPress={()=>{}}>
+          <TouchableOpacity onPress={openMenueModal}>
             <View style={{backgroundColor : "transparent", padding : 2, borderRadius : 50, marginRight : 5}}>
               <Feather name="more-horizontal" size={25} color="gray" />
               </View>
@@ -749,9 +775,9 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
                     zIndex : 2,
                     
                 }]}>
-                <Text style={{ zIndex : 2, fontFamily: 'Inter-SemiBold', fontSize: 16, color: theme.text }}>
+                {selectedDish && <Text style={{ zIndex : 2, fontFamily: 'Inter-SemiBold', fontSize: 16, color: theme.text }}>
                     {selectedDish.emoji} {selectedDish.dish}
-                </Text>
+                </Text>}
                 </Animated.View>
             </TouchableOpacity>
 
@@ -820,10 +846,13 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
             {selectedMarker.reviews && selectedDish && selectedMarker.reviews.filter(review => review.dish == selectedDish.dish  ).map((review, index) => (
               <View key={index} style={{ marginBottom: 15, backgroundColor : theme.light_gray,padding : 5,paddingHorizontal : 8,borderRadius : 10 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <View style={{ flexDirection: 'row',marginBottom : 5,marginTop : 5, alignItems: 'center' }}>
                         <View>
-                            <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 15, color: theme.text }}>
+                            {/* <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 15, color: theme.text }}>
                                 {review.emoji} {review.dish}
+                            </Text> */}
+                            <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 15, color: theme.text }}>
+                                {review.name}
                             </Text>
                         </View>
                         <View style={{ backgroundColor: theme.blue, padding: 2,paddingHorizontal : 4, borderRadius: 5, marginLeft: 3, alignItems: 'center' }}>
@@ -832,10 +861,16 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
                             </Text>
                         </View>
                     </View>
-                    <View>
-                        <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 11, color: 'gray', textDecorationLine: 'none' }}>
+                    <View style={{marginTop : -10}}>
+                        {/* <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 11, color: 'gray', textDecorationLine: 'none' }}>
                             {review.name}
-                        </Text>
+                        </Text> */}
+
+
+                        <TouchableOpacity onPress={openReviewMenueModal}>
+                            <Feather name="more-horizontal" size={25} color="gray" />
+                        </TouchableOpacity>
+
                     </View>
                 </View>
 
@@ -854,6 +889,16 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
                   tintColor={theme.light_gray}
                   style={{ alignSelf: 'flex-start' }}
                 /> */}
+                <Rating
+                            type='custom'
+                            ratingColor='#E8D406'
+                            ratingBackgroundColor='#D3D3D3'
+                            startingValue={review.rating}
+                            imageSize={20}
+                            readonly
+                            tintColor={theme.light_gray}
+                            style={{ alignSelf: 'flex-start' }}
+                            />
               </View>
             ))}
             </View>
@@ -863,11 +908,34 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
 
           </View>
 
+          <CustomModal
+                    visible={isMenueModalVisible}
+                    onClose={closeMenueModal}
+                    title={selectedMarker.title}
+                    options={
+                        [
+                            { label: "Le restaurant n'est pas bien placé", handle: () => console.log("Modifier") },
+                            { label: "Les horraires ont changées", handle: () => console.log("Modifier") },
+                            { label: "Le nom ou le type de restaurant est incorrect", handle: () => console.log("Modifier") },
+                            { label: "Le restaurant n'existe pas",dangerous : true, handle: () => console.log("Supprimer") },
+                        ]}
+                />
+
+            
+            <CustomModal
+                    visible={isReviewMenueModalVisible}
+                    onClose={closeReviewMenueModal}
+                    title={"Signaler le commentaire"}
+                    options={
+                        [
+                            { label: "Les informations de ce commentaires ne sont plus valables", handle: () => console.log("Modifier") },
+                            { label: "Le commentaire n'est pas approprié",dangerous : true, handle: () => console.log("Supprimer") },
+                        ]}
+                />      
 
 
 
-
-
+          
 
         </RNAnimated.View>
       </PanGestureHandler>

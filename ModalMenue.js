@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useTheme } from './context/ThemeContext';
 
-const CustomModal = ({ visible, onClose, onDeleteForEveryone, onDeleteForMe }) => {
+const CustomModal = ({ visible, onClose, options,title }) => {
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(100);
 
@@ -27,8 +27,7 @@ const CustomModal = ({ visible, onClose, onDeleteForEveryone, onDeleteForMe }) =
     };
   });
 
-
-const styles = StyleSheet.create({
+  const styles = StyleSheet.create({
     overlay: {
       flex: 1,
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -53,17 +52,12 @@ const styles = StyleSheet.create({
     option: {
       paddingVertical: 15,
     },
-    deleteForEveryoneText: {
-      color: theme.red,
-      textAlign: 'center',
-      fontSize: 16,
-      fontFamily: 'Inter-Medium',
-    },
-    deleteForMeText: {
+    optionText: {
       color: theme.text,
       textAlign: 'center',
       fontSize: 16,
-        fontFamily: 'Inter-Medium',
+      fontFamily: 'Inter-Medium',
+      marginHorizontal : 30,
     },
     closeButton: {
       position: 'absolute',
@@ -74,6 +68,14 @@ const styles = StyleSheet.create({
       color: theme.text,
       fontSize: 18,
     },
+
+    dangerousText: {
+      color: theme.red,
+      textAlign: 'center',
+      fontSize: 16,
+      fontFamily: 'Inter-Medium',
+    },
+
   });
 
   return (
@@ -81,32 +83,34 @@ const styles = StyleSheet.create({
       <SafeAreaView style={styles.overlay}>
         <Animated.View style={[styles.modalContainer, animatedStyle]}>
 
-            <View style={{flexDirection : 'row', backgroundColor : 'transparent',marginTop : -10,marginRight : -30,width : "100%",alignSelf : "center",justifyContent : "flex-end", alignItems: "flex-start" }}>
-                    <View style={{flex : 1}}>
-                    <Text style={styles.title}>Commentaire</Text>
-                    </View>
-
-                    <TouchableOpacity  onPress={onClose}>
-                    <View style={{backgroundColor : theme.light_gray, borderRadius : 50, padding : 0,marginRight : 3}}>
-                        <Ionicons name="close" size={25} color="gray" />
-                    </View>
-                    </TouchableOpacity>
+          <View style={{flexDirection : 'row', backgroundColor : 'transparent',marginTop : -10,marginRight : -30,width : "100%",alignSelf : "center",justifyContent : "flex-end", alignItems: "flex-start" }}>
+            <View style={{flex : 1}}>
+              <Text style={styles.title}>{title}</Text>
             </View>
-                    
-            <SafeAreaView style={{ backgroundColor : theme.light_gray, borderRadius : 10 }} >
-          <TouchableOpacity style={styles.option} onPress={ onDeleteForMe}>
-            <Text style={styles.deleteForMeText}>Modifier le commentaire</Text>
-          </TouchableOpacity>
-          <View style={{borderBottomWidth : 1, borderBottomColor : theme.gray, marginHorizontal : 20}}></View>
-          <TouchableOpacity style={styles.option} onPress={onDeleteForEveryone}>
-            <Text style={styles.deleteForEveryoneText}>Supprimer le commentaire</Text>
-          </TouchableOpacity>
+
+            <TouchableOpacity onPress={onClose}>
+              <View style={{backgroundColor : theme.light_gray, borderRadius : 50, padding : 0,marginRight : 3}}>
+                <Ionicons name="close" size={25} color="gray" />
+              </View>
+            </TouchableOpacity>
+          </View>
+          
+          <SafeAreaView style={{ backgroundColor : theme.light_gray, borderRadius : 10 }}>
+            {options.map((option, index) => (
+              <React.Fragment key={index}>
+                <TouchableOpacity style={styles.option} onPress={option.handle}>
+                  <Text adjustsFontSizeToFit={true} numberOfLines={2} style={[styles.optionText,option.dangerous ? styles.dangerousText : {}]}>{option.label}</Text>
+                </TouchableOpacity>
+                {index < options.length - 1 && (
+                  <View style={{borderBottomWidth : 1, borderBottomColor : theme.gray, marginHorizontal : 20}} />
+                )}
+              </React.Fragment>
+            ))}
           </SafeAreaView>
         </Animated.View>
       </SafeAreaView>
     </Modal>
   );
 };
-
 
 export default CustomModal;

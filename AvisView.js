@@ -105,8 +105,8 @@ export default AvisViewPrincipal = () => {
 
                 <TouchableOpacity activeOpacity={0.8} onPress={()=>
                     {
-                        //navigation.navigate("NewAvisView")
-                        ToastNotif("Ajout d'un avis","check-circle",theme,"green",2000)
+                        navigation.navigate("NewAvisView")
+                        // ToastNotif("Ajout d'un avis","check-circle",theme,"green",2000)
                         }}>
                 <View style={{ backgroundColor: theme.blue, marginHorizontal: 20, justifyContent: 'center', alignItems: 'center', borderRadius: 10 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -172,11 +172,17 @@ export default AvisViewPrincipal = () => {
                 </ScrollView>
 
                 <CustomModal
-        visible={isModalVisible}
-        onClose={closeModal}
-        onDeleteForEveryone={()=>{}}
-        onDeleteForMe={()=>{}}
-      />
+                    visible={isModalVisible}
+                    onClose={closeModal}
+                    title={"Commentaire"}
+                    options={
+                        [
+                            { label: "Modifier", handle: () => console.log("Modifier") },
+                            { label: "Supprimer",dangerous : true, handle: () => console.log("Supprimer") },
+                        ]}
+                />
+
+                    
 
 
         </View> 
