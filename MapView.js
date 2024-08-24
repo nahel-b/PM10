@@ -15,17 +15,22 @@ import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome from  '@expo/vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaFrameContext, SafeAreaView } from 'react-native-safe-area-context';
-import { ToastObj } from './Utils';
+import { ToastObj, ToastNotif } from './Utils';
 import { Rating } from 'react-native-ratings'; // Importer le composant Rating
 import { useTheme } from './context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+
+import * as Haptics from 'expo-haptics';
+
+
 import  CustomModal from './ModalMenue';
 
 import MapView from "react-native-map-clustering";
 import { useRestaurant } from './context/RestaurantsContext';
+import Toast from 'react-native-toast-message';
 
 
 const DEFAULT_LOCATION = { latitude: 37.78825, longitude: -122.4324 }; 
@@ -135,10 +140,13 @@ const App = () => {
     const { restaurants } = useRestaurant();
     const searchInputRef = useRef(null);
     const [mapKey, setMapKey] = useState('map1');
+    const [mapType, setMapType] = useState('standard');
+
+    const [addingNewRestaurant, setAddingNewRestaurant] = useState(false);
 
     const insets = useSafeAreaInsets();
 
-
+    const [currentMapRegion, setCurrentMapRegion] = useState(null);
   
     useEffect(() => {
       setMarkers(restaurants); // Mettre à jour les marqueurs quand les restaurants changent
@@ -156,7 +164,7 @@ const App = () => {
           } else {
             setStoredLocation(DEFAULT_LOCATION);
           }
-          handleLocationButtonPress();
+          handleLocationButtonPress(first = true);
         } catch (e) {
           console.log("Erreur lors du chargement de la position stockée", e);
         }
@@ -177,16 +185,22 @@ const App = () => {
         let { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
           setError('Permission refusée');
-          setLoading(false);
+          console.log(first)
+          if(!first){
+          ToastNotif("Veuillez activer la localisation dans les reglages", "times-circle", { button_background: "red", text: "white" }, "white", 3000);
+          }setLoading(false);
           return;
         }
   
         let currentLocation = await Location.getCurrentPositionAsync({});
         setLocation(currentLocation);
         await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(currentLocation.coords));
-        setLoading(false);
+        
         setStoredLocation(currentLocation.coords);
-        centerMapOnLocation();
+        if(loading){
+        centerMapOnLocation();}
+
+        setLoading(false);
       } catch (err) {
         setError('Échec de localisation');
         console.log("Erreur lors de la localisation", err);
@@ -206,22 +220,26 @@ const App = () => {
       }
     };
   
-    const handleLocationButtonPress = async () => {
-      await getCurrentLocation();
-      if (storedLocation) {
-        centerMapOnLocation();
-      }
+    const handleLocationButtonPress = async (first = false) => {
+        if(loading){setLoading(false)}
+        else{
+      await getCurrentLocation(first);}
+    //   if (storedLocation) {
+    //     centerMapOnLocation();
+    //   }
     };
   
     const handleMarkerPress = (marker) => {
       markerPressedRef.current = true;
       setSelectedMarker(marker);
+
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   
       mapRef.current.animateToRegion({
-        latitude: marker.coordinate.latitude - 0.0005,
+        latitude: marker.coordinate.latitude - 0.0001,
         longitude: marker.coordinate.longitude,
-        latitudeDelta: 0.005,
-        longitudeDelta: 0.005,
+        latitudeDelta: 0.001,
+        longitudeDelta: 0.001,
       }, 1000);
   
       if (!isModalVisible) {
@@ -272,6 +290,28 @@ const App = () => {
         <Text style={{ color: 'white', fontFamily: "Inter-Black", fontSize: 20 }}>{count}</Text>
       </View>
     );
+
+    const handlePlusButtonPress = () => {
+        setAddingNewRestaurant(true);
+      }
+
+
+      const handleValidation = () => {
+        if (currentMapRegion) {
+          // tester si le zoom n'est pas trop bas
+          if (currentMapRegion.latitudeDelta > 0.002) {
+            ToastNotif("Zoom pour être plus précis", "times-circle", { button_background: theme.background, text: theme.text }, theme.red, 3000);
+          }
+          else
+          {
+            console.log(currentMapRegion);
+          }
+            
+        }
+        else {
+             ToastNotif("Veuillez vous déplacer sur la carte", "times-circle", { button_background: theme.background, text: theme.text }, theme.red, 3000);
+            }
+      };
   
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>
@@ -279,12 +319,15 @@ const App = () => {
           ref={mapRef}
           style={{ flex: 1 }}
           key={mapKey}
+          radius={Dimensions.get('window').width * 0.15}
+            onRegionChangeComplete={(region) => {setCurrentMapRegion(region)}}
           initialRegion={{
             latitude: storedLocation?.latitude || DEFAULT_LOCATION.latitude,
             longitude: storedLocation?.longitude || DEFAULT_LOCATION.longitude,
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
           }}
+          mapType={mapType}
           userInterfaceStyle={themeName === 'dark' ? 'dark' : 'light'}
           onPress={handleMapPress}
           showsUserLocation={true}
@@ -314,6 +357,8 @@ const App = () => {
                 coordinate={marker.coordinate}
                 onPress={() => handleMarkerPress(marker)}
                 zIndex={selectedMarker ? (selectedMarker.id == marker.id ? 3 : 2) : 2}
+                centerOffset={{ x: 0, y: -40 }}
+
               >
                 <Animated.View style={{
                   borderRadius: 5,
@@ -344,13 +389,26 @@ const App = () => {
                     tintColor={theme.background}
                     style={{ marginLeft: 0 }}
                   />
+
+            <View style={{
+                width: 0,
+                height: 0,
+                borderLeftWidth: 20,
+                borderRightWidth: 20,
+                borderTopWidth: 15,
+                bottom: -15,
+                borderLeftColor: 'transparent',
+                borderRightColor: 'transparent',
+                borderTopColor: theme.background,
+                alignSelf: 'center',
+                }} />
                 </Animated.View>
               </Marker>
             ))
           }
         </MapView>
   
-        {selectedMarker && (
+        {!addingNewRestaurant && selectedMarker && (
           <ModalMarker
             selectedMarker={selectedMarker}
             closeModal={closeModal}
@@ -358,7 +416,7 @@ const App = () => {
           />
         )} 
   
-        <View style={{
+        {/* <View style={{
           position: 'absolute',
           bottom: 20,
           right: 20,
@@ -380,14 +438,14 @@ const App = () => {
             {loading ? (
               <ActivityIndicator size="small" color="black" />
             ) : error ? (
-              <Ionicons name="alert" size={30} color="red" />
+              <Ionicons name="alert" size={30} color="blue" />
             ) : (
               <FontAwesome6 name="location-crosshairs" size={30} color="black" />
             )}
           </TouchableOpacity>
-        </View>
+        </View> */}
 
-        <View style={{ flexDirection : "row", alignSelf : "center",alignItems : "center",position : "absolute",top : insets.top, width : "90%"}}>
+        <View style={{ flexDirection : "row", alignSelf : "center",alignItems : "flex-start",position : "absolute",top : insets.top, width : "90%"}}>
             <View style={{flexDirection : "row",borderRadius : 15,backgroundColor :  theme.background,
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 1 },
@@ -395,9 +453,41 @@ const App = () => {
                 shadowRadius: 3,
                 paddingVertical : 10, paddingHorizontal : 7,flex : 1,flexGrow : 2}}>
                 <Ionicons name="search" size={20} color={theme.dark_gray}/>
-                <TextInput placeholderTextColor={theme.dark_gray} ref={searchInputRef} style={{color : theme.text,fontFamily : "Inter-Bold", marginLeft : 5}} placeholder='Recherche...' />
+                <TextInput placeholderTextColor={theme.dark_gray} ref={searchInputRef} style={{color : theme.text,fontFamily : "Inter-Bold",marginLeft : 5}} placeholder='Recherche...' />
             </View>
-            <TouchableOpacity activeOpacity={0.5} onPress={()=>navigation.navigate("ReglageView")}>
+
+            <View style={{ flexDirection : "row", alignSelf : "center", justifyContent : "flex-end",alignItems : "center"}}>
+            <View style={{
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.5,
+                shadowRadius: 3,
+                backgroundColor : theme.background,
+                borderRadius : 5,
+                padding : 10,
+                marginLeft : 10
+            }}>
+                <TouchableOpacity activeOpacity={0.5} onPress={()=>navigation.navigate("ReglageView")}>
+
+                    <Ionicons name="cog" size={20} color={theme.text} /> 
+
+                </TouchableOpacity>
+
+                <View style={{marginVertical : 8,borderTopWidth : 1,borderTopColor : theme.gray}}/>
+
+                <TouchableOpacity activeOpacity={0.5} onPress={()=>{setMapType(mapType == "hybridFlyover" ? "standard" : "hybridFlyover")}}>
+
+                    {mapType == "hybridFlyover" ? <Ionicons name="map-outline" size={20} color={theme.text} style={{ }} /> 
+                    : <FontAwesome name="globe" size={20} color={theme.text} style={{ }} />
+                }
+                </TouchableOpacity>
+
+            </View>
+
+            
+
+        </View>
+            {/* <TouchableOpacity activeOpacity={0.5} onPress={()=>navigation.navigate("ReglageView")}>
             <View style={{marginLeft : 5,
                 
                 shadowColor: '#000',
@@ -405,10 +495,17 @@ const App = () => {
                 shadowOpacity: 0.5,
                 shadowRadius: 3,
             }}>
-                 <Ionicons name="cog" size={33} color={theme.background} /> 
+                {!addingNewRestaurant && <Ionicons name="cog" size={33} color={theme.background} /> }
             </View>
-            </TouchableOpacity>
+
+            
+
+            </TouchableOpacity> */}
         </View>
+
+        
+
+
         
     
   
@@ -419,13 +516,33 @@ const App = () => {
             animatedHeight={animatedHeight}
           />
         )} */}
+         {/* Point fixe au centre de l'écran */}
+            {addingNewRestaurant && (
+            <View style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: [{ translateX: -20 }, { translateY: -7.5 }],
+                zIndex: 2,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.8,
+                shadowRadius: 2,
+                elevation: 5,
+                justifyContent: 'center',
+                alignItems: 'center',
+            }} >
+                <FontAwesome6 style={{alignSelf : "center"}} name="crosshairs" size={35} color={theme.text} />
+            
+             </View>
+            )}
   
         {/* Bouton de localisation */}
-        <View style={{
+        {!addingNewRestaurant && <View style={{
           position: 'absolute',
-          bottom: 20,
+          bottom: 90,
           right: 20,
-          backgroundColor: 'white',
+          backgroundColor: theme.background,
           borderRadius: 50,
           padding: 0,
           width: 60,
@@ -439,16 +556,93 @@ const App = () => {
           justifyContent: 'center',
           alignItems: 'center',
         }}>
-          <TouchableOpacity onPress={handleLocationButtonPress}>
+          <TouchableOpacity onPress={() => handleLocationButtonPress(first = false)}>
             {loading ? (
               <ActivityIndicator size="small" color="black" />
             ) : error ? (
-              <Ionicons name="alert" size={30} color="red" />
+              <Ionicons name="alert" size={30} color="blue" />
             ) : (
-              <FontAwesome6 name="location-crosshairs" size={30} color="black" />
+              <FontAwesome6 name="location-crosshairs" size={30} color={theme.text} />
             )}
           </TouchableOpacity>
-        </View>
+        </View>}
+
+        {!addingNewRestaurant && <View style={{
+          position: 'absolute',
+          bottom: 20,
+          right: 20,
+          backgroundColor: theme.background,
+          borderRadius: 50,
+          padding: 0,
+          width: 60,
+          height: 60,
+          zIndex: 1,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.8,
+          shadowRadius: 2,
+          elevation: 5,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+          <TouchableOpacity onPress={() => handlePlusButtonPress()}>
+            {loading ? (
+              <ActivityIndicator size="small" color="black" />
+            ) : error ? (
+              <Ionicons name="alert" size={30} color="blue" />
+            ) : (
+              <FontAwesome6 name="plus" size={30} color={theme.text} />
+            )}
+          </TouchableOpacity>
+        </View>}
+
+        {addingNewRestaurant && <View style={{
+          position: 'absolute',
+          bottom: 20,
+          alignSelf : "center",
+          borderRadius: 50,
+          padding: 10,
+          zIndex: 1,
+          width: "80%",
+          flexDirection : "row",
+          justifyContent: "space-around",
+          alignItems: 'center',
+        }}>
+            <TouchableOpacity onPress={() => setAddingNewRestaurant(false)}>
+            <View style={{flexDirection : 'row',alignItems : "center",
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.8,
+                shadowRadius: 2,
+                elevation: 5,
+                backgroundColor: theme.background,
+                borderRadius: 15,
+                padding: 15,
+
+            }}>
+              <FontAwesome name="times" size={15} color={theme.gray} />
+              <Text style={{marginLeft : 5,color : theme.gray, fontSize : 16, fontFamily : "Inter-Bold"}}>Annuler</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => handleValidation()}>
+            <View style={{flexDirection : 'row',alignItems : "center",
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.8,
+                shadowRadius: 2,
+                elevation: 5,
+                backgroundColor: theme.blue,
+                borderRadius: 15,
+                padding: 15,
+                marginLeft : 0
+            }}>
+              <FontAwesome name="check" size={15} color={"white"} />
+              <Text style={{marginLeft : 5,color : "white", fontSize : 16, fontFamily : "Inter-Bold"}}>Placer</Text>
+            </View>
+          </TouchableOpacity>
+          
+        </View>}
       </GestureHandlerRootView>
     );
   };
@@ -722,7 +916,7 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
             </TouchableOpacity>
             
           </View>   
-          <Text style={{textAlign : "left", fontFamily : "Inter-Medium",marginTop : 10,color : theme.dark_gray,fontSize : 11}}>Proposé par <Text style={{color : theme.red}}>{selectedMarker.author}</Text></Text>
+          <Text style={{textAlign : "left", fontFamily : "Inter-Medium",marginTop : 10,color : theme.dark_gray,fontSize : 11}}>Proposé par <Text style={{fontSize : 13,color : theme.red, fontFamily : "Inter-Bold"}}>{selectedMarker.author}</Text></Text>
 
             <View style={{ borderBottomColor: theme.light_gray, borderBottomWidth: 2, marginBottom: 5,marginTop : 5 }} /> 
             </View>

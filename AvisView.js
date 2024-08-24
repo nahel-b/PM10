@@ -26,7 +26,7 @@ import CustomModal from './ModalMenue';
 
 
 
-import NewAvisView from './NewAvisView';
+// import NewAvisView from './NewAvisView';
 
 const reviewsData = [
     {
