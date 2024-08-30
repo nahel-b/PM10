@@ -4,11 +4,11 @@ const RestaurantContext = createContext([]);
 
 export const RestaurantProvider = ({ children }) => {
   const [restaurants, setRestaurants] = useState([]); 
-
+  const [typeRestaurants, setTypeRestaurants] = useState([]);
   
 
   return (
-    <RestaurantContext.Provider value={{ restaurants, setRestaurants }}>
+    <RestaurantContext.Provider value={{ restaurants, setRestaurants, typeRestaurants, setTypeRestaurants }}>
       {children}
     </RestaurantContext.Provider>
   );

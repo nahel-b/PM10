@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Alert, View, Text, Button } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ThemeProvider, useTheme } from './context/ThemeContext';
-import { RestaurantProvider, useRestaurant } from './context/RestaurantsContext';
-import AppNavigator from './AppNavigator';
-import { API_URL } from './config';
-import { ToastNotif, ToastObj, ToastHide } from './Utils';
-import { getAllRestaurants } from './api';
+import { ThemeProvider, useTheme } from './App/context/ThemeContext';
+import { RestaurantProvider, useRestaurant } from './App/context/RestaurantsContext';
+import AppNavigator from './App/AppNavigator';
+import { API_URL } from './App/config/Config';
+import { ToastNotif, ToastObj, ToastHide } from './App/Utils';
+import { getAllRestaurants,getAllTypeRestaurants } from './App/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Principal = ({ navigation }) => {
@@ -15,7 +15,7 @@ const Principal = ({ navigation }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [isBackendConnected, setIsBackendConnected] = useState(true);
   const { theme, changeTheme } = useTheme();
-  const { restaurants, setRestaurants } = useRestaurant();
+  const { restaurants, setRestaurants, setTypeRestaurants } = useRestaurant();
 
 
   const loadTheme = async () => {
@@ -30,14 +30,18 @@ const Principal = ({ navigation }) => {
     try {
       await loadTheme();
       ToastNotif("Récupération des restaurants...", "loading-cricle", { button_background: theme.background, text: theme.text }, theme.text, 10000, "bottom", true);
-      const response = await getAllRestaurants();
-      setRestaurants(response); 
+      
+      const restaurants = await getAllRestaurants();
+      setRestaurants(restaurants); 
+      const typeRestaurants = await getAllTypeRestaurants();
+      setTypeRestaurants(typeRestaurants);
       ToastHide(); 
       setIsBackendConnected(true);
+
     } catch (error) {
       console.error('Erreur lors de la récupération des restaurants:', error);
       ToastNotif("Erreur lors de la récupération des restaurants", "times-circle", { button_background: "red", text: "white" }, "white", 3000);
-      setIsBackendConnected(false);
+      //setIsBackendConnected(false);
     }
   };
 
@@ -45,7 +49,7 @@ const Principal = ({ navigation }) => {
     await loadTheme();
     loadAllRestaurants();
 
-    const token = await AsyncStorage.getItem('authToken');
+    const token = await AsyncStorage.getItem('authToken'); 
     if (token) {
       try {
         const response = await fetch(`${API_URL}/checktoken`, {
@@ -90,7 +94,10 @@ const Principal = ({ navigation }) => {
   const handleRetry = () => {
     const unsubscribe = NetInfo.addEventListener(state => {
       console.log('Connection type', state.isConnected);
-      setIsConnected(state.isConnected);
+      // setIsConnected(state.isConnected);
+
+      //TODO
+      setIsConnected(true);
     });
     unsubscribe();
     checkAuthentication();

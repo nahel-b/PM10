@@ -20,6 +20,8 @@ import { Rating } from 'react-native-ratings'; // Importer le composant Rating
 import { useTheme } from './context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 
+
+
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
@@ -35,6 +37,11 @@ import Toast from 'react-native-toast-message';
 
 const DEFAULT_LOCATION = { latitude: 37.78825, longitude: -122.4324 }; 
 const STORAGE_KEY = "lastLocation"; 
+
+
+// definir input 
+
+
 
 const markersData = [
   {
@@ -274,6 +281,10 @@ const App = () => {
     const forceRerender = () => {
         setMapKey(prevKey => (prevKey === 'map1' ? 'map2' : 'map1'));
       };
+
+      const Input = ({  }) => {
+        return   <TextInput placeholderTextColor={theme.dark_gray} ref={searchInputRef} style={{color : theme.text,fontFamily : "Inter-Bold",marginLeft : 5}} placeholder='Recherche...' />
+        }
   
     const CustomCluster = ({ count }) => (
       <View style={{
@@ -396,11 +407,15 @@ const App = () => {
                 borderLeftWidth: 20,
                 borderRightWidth: 20,
                 borderTopWidth: 15,
-                bottom: -15,
+                bottom: -12,
+                position: 'absolute',
                 borderLeftColor: 'transparent',
                 borderRightColor: 'transparent',
                 borderTopColor: theme.background,
                 alignSelf: 'center',
+                // shadowColor: '#000',
+                // shadowOffset: { width: 0, height: 2 },
+                // shadowOpacity: 0.5,
                 }} />
                 </Animated.View>
               </Marker>
@@ -453,7 +468,8 @@ const App = () => {
                 shadowRadius: 3,
                 paddingVertical : 10, paddingHorizontal : 7,flex : 1,flexGrow : 2}}>
                 <Ionicons name="search" size={20} color={theme.dark_gray}/>
-                <TextInput placeholderTextColor={theme.dark_gray} ref={searchInputRef} style={{color : theme.text,fontFamily : "Inter-Bold",marginLeft : 5}} placeholder='Recherche...' />
+                <Input />
+            
             </View>
 
             <View style={{ flexDirection : "row", alignSelf : "center", justifyContent : "flex-end",alignItems : "center"}}>
@@ -463,23 +479,25 @@ const App = () => {
                 shadowOpacity: 0.5,
                 shadowRadius: 3,
                 backgroundColor : theme.background,
-                borderRadius : 5,
-                padding : 10,
-                marginLeft : 10
+                borderRadius : 15,
+                padding : 10.5,
+                marginLeft : 10,
+                flexDirection : "row",
             }}>
-                <TouchableOpacity activeOpacity={0.5} onPress={()=>navigation.navigate("ReglageView")}>
-
-                    <Ionicons name="cog" size={20} color={theme.text} /> 
-
-                </TouchableOpacity>
-
-                <View style={{marginVertical : 8,borderTopWidth : 1,borderTopColor : theme.gray}}/>
-
                 <TouchableOpacity activeOpacity={0.5} onPress={()=>{setMapType(mapType == "hybridFlyover" ? "standard" : "hybridFlyover")}}>
 
                     {mapType == "hybridFlyover" ? <Ionicons name="map-outline" size={20} color={theme.text} style={{ }} /> 
                     : <FontAwesome name="globe" size={20} color={theme.text} style={{ }} />
                 }
+
+                </TouchableOpacity>
+
+                <View style={{marginHorizontal : 8,borderLeftWidth : 1,borderColor : theme.gray}}/>
+                
+                <TouchableOpacity activeOpacity={0.5} onPress={()=>navigation.navigate("ReglageView")}>
+                <Ionicons name="cog" size={20} color={theme.text} /> 
+
+                    
                 </TouchableOpacity>
 
             </View>
@@ -524,15 +542,11 @@ const App = () => {
                 left: '50%',
                 transform: [{ translateX: -20 }, { translateY: -7.5 }],
                 zIndex: 2,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.8,
-                shadowRadius: 2,
-                elevation: 5,
+                
                 justifyContent: 'center',
                 alignItems: 'center',
             }} >
-                <FontAwesome6 style={{alignSelf : "center"}} name="crosshairs" size={35} color={theme.text} />
+                <FontAwesome6 style={{alignSelf : "center"}} name="crosshairs" size={30} color={theme.text} />
             
              </View>
             )}
@@ -540,13 +554,13 @@ const App = () => {
         {/* Bouton de localisation */}
         {!addingNewRestaurant && <View style={{
           position: 'absolute',
-          bottom: 90,
+          bottom: 80,
           right: 20,
           backgroundColor: theme.background,
           borderRadius: 50,
           padding: 0,
-          width: 60,
-          height: 60,
+          width: 50,
+          height: 50,
           zIndex: 1,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 2 },
@@ -560,9 +574,11 @@ const App = () => {
             {loading ? (
               <ActivityIndicator size="small" color="black" />
             ) : error ? (
-              <Ionicons name="alert" size={30} color="blue" />
+              <Ionicons name="alert" size={25} color="blue" />
             ) : (
-              <FontAwesome6 name="location-crosshairs" size={30} color={theme.text} />
+            <View style={{position : "absolute",bottom : -14,left : -13}}>
+              <FontAwesome6 name="location-arrow" size={25} color={theme.text} />
+              </View>
             )}
           </TouchableOpacity>
         </View>}
@@ -574,8 +590,8 @@ const App = () => {
           backgroundColor: theme.background,
           borderRadius: 50,
           padding: 0,
-          width: 60,
-          height: 60,
+          width: 50,
+          height: 50,
           zIndex: 1,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 2 },
@@ -586,13 +602,9 @@ const App = () => {
           alignItems: 'center',
         }}>
           <TouchableOpacity onPress={() => handlePlusButtonPress()}>
-            {loading ? (
-              <ActivityIndicator size="small" color="black" />
-            ) : error ? (
-              <Ionicons name="alert" size={30} color="blue" />
-            ) : (
-              <FontAwesome6 name="plus" size={30} color={theme.text} />
-            )}
+            
+              <FontAwesome6 name="plus" size={25} color={theme.text} />
+            
           </TouchableOpacity>
         </View>}
 

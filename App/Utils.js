@@ -15,20 +15,22 @@ const toastConfig = {
 
   tomatoToast: ({ text1, props }) => (
     //TODO : ajuster avec l'encoche la safeview la margin
-    <View style={{margin : props.position == "bottom" ? 0 : 60,height: 40, backgroundColor: props.theme.button_background, justifyContent: "center", borderRadius: 20, paddingHorizontal: 10,
+    <View style={{margin : props.position == "bottom" ? 0 : 60,height: 40, backgroundColor: props.theme.button_background, justifyContent: "center", borderRadius: 20, 
+      paddingHorizontal: 10,
+      marginHorizontal : 30,
 
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.8,
      }}>
-      <View style={{ flexDirection: "row", justifyContent: "flex-start", alignItems: "flex-start" }}>
+      <View style={{ flexDirection: "row", justifyContent: "flex-start",  }}>
         {props.activityIndicator ?
         <ActivityIndicator size="small" color="black" style={{ alignSelf: "center" }}/>
             :
         <Icon name={props.iconName ? props.iconName : "check-circle"} size={25} color={props.iconColor} style={{ alignSelf: "center" }} />
         
 }
-        <Text style={{ marginLeft: 10, color: props.theme.text, fontSize: 15, fontWeight: 'bold', textAlign: 'center', paddingVertical: 10 }}>
+        <Text adjustsFontSizeToFit minimumFontScale={0.3}  numberOfLines={2}   style={{ marginLeft: 10, color: props.theme.text, fontSize: 15,fontFamily : 'Inter-Black', textAlign: 'center', paddingVertical: 10 }}>
           {text1}
         </Text>
       </View>

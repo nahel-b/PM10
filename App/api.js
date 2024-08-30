@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import {API_URL} from './config';
+import {API_URL} from './config/Config';
 
 const fetchWithToken = async (url, options = {}) => {
     try {
@@ -73,7 +73,7 @@ const getNearbyRestaurants = async (lat, lon, distance) => {
 
 // Fonction pour récupérer tous les restaurants
 const getAllRestaurants = async () => {
-    const url = `${API_URL}/restaurants/all`;  // L'URL de l'API pour récupérer les restaurants
+    const url = `${API_URL}/restaurants/all`; 
 
     try {
         const response = await fetchWithToken(url);
@@ -84,7 +84,19 @@ const getAllRestaurants = async () => {
     }
 };
 
+const getAllTypeRestaurants = async () => {
+    const url = `${API_URL}/typerestaurants/all`; 
+
+    try {
+        const response = await fetchWithToken(url);
+        return response;  
+    } catch (error) {
+        console.error('Failed to fetch nearby restaurants:', error);
+        throw error; 
+    }
+};
 
 
 
-export {fetchWithToken, addRestaurant, getNearbyRestaurants, getAllRestaurants};
+
+export {fetchWithToken, addRestaurant, getNearbyRestaurants, getAllRestaurants, getAllTypeRestaurants};

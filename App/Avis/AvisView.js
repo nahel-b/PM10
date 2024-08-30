@@ -4,25 +4,18 @@ import { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { PanGestureHandler, GestureHandlerRootView, State, TextInput } from 'react-native-gesture-handler';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+
 import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome from  '@expo/vector-icons/FontAwesome';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ToastObj, ToastNotif } from './Utils';
+
 import { Rating } from 'react-native-ratings'; // Importer le composant Rating
-import { useTheme } from './context/ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 
-import MapView from "react-native-map-clustering";
-import { useRestaurant } from './context/RestaurantsContext';
+
 import { useNavigation } from '@react-navigation/native';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming,withSpring, runOnJS } from 'react-native-reanimated';
-
-import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
-import { NavigationContainer } from '@react-navigation/native';
 
 
-import CustomModal from './ModalMenue';
+import CustomModal from '../ModalMenue';
 
 
 

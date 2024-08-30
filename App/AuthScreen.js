@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import {API_URL} from './config';
+import {API_URL} from './config/Config';
 
 
 const AuthScreen = ({ navigation }) => {

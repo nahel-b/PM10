@@ -3,9 +3,9 @@ import { createStackNavigator, TransitionPresets } from '@react-navigation/stack
 import { NavigationContainer } from '@react-navigation/native';
 import MapView from './MapView';
 import AuthScreen from './AuthScreen';
-import AvisView from './AvisView';
+import AvisView from './Avis/AvisView';
 import ReglageView from './ReglageView';
-import NewAvisView from './NewAvisView';
+import NewAvisView from './Avis/NewAvisView';
 
 import 'react-native-gesture-handler';
 import { enableScreens } from 'react-native-screens';
@@ -15,7 +15,7 @@ const Stack = createStackNavigator();
 
 export default function AppNavigator({ isAuthenticated }) {
   return (
-    <NavigationContainer>
+    <NavigationContainer independent={true}>
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
