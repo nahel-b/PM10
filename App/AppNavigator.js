@@ -6,6 +6,7 @@ import AuthScreen from './AuthScreen';
 import AvisView from './Avis/AvisView';
 import ReglageView from './ReglageView';
 import NewAvisView from './Avis/NewAvisView';
+import NewRestaurantView from './NewRestaurantView'
 
 import 'react-native-gesture-handler';
 import { enableScreens } from 'react-native-screens';
@@ -52,6 +53,15 @@ export default function AppNavigator({ isAuthenticated }) {
                
               }}
             />
+            <Stack.Screen
+              name="NewRestaurantView"
+              component={NewRestaurantView}
+              options={{
+                ...TransitionPresets.ModalPresentationIOS, // Applique l'effet modal
+               
+              }}
+            />
+
           </>
         ) : (
           <Stack.Screen name="Auth" component={AuthScreen} />

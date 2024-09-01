@@ -98,13 +98,13 @@ export default AvisViewPrincipal = () => {
 
                 <TouchableOpacity activeOpacity={0.8} onPress={()=>
                     {
-                        navigation.navigate("NewAvisView")
+                        navigation.navigate("NewAvisView",{EnvoieDirect : true})
                         // ToastNotif("Ajout d'un avis","check-circle",theme,"green",2000)
                         }}>
                 <View style={{ backgroundColor: theme.blue, marginHorizontal: 20, justifyContent: 'center', alignItems: 'center', borderRadius: 10 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <FontAwesome name={"plus"} color={"white"} size={14} />
-                    <Text style={{ marginLeft: 5, fontFamily: 'Inter-Bold', fontSize: 13.5, color: theme.background, paddingVertical: 12 }}>Ajouter un plat</Text>
+                    <Text style={{ marginLeft: 5, fontFamily: 'Inter-Bold', fontSize: 13.5, color: theme.text, paddingVertical: 12 }}>Ajouter un plat</Text>
                     </View>
                 </View>
                 </TouchableOpacity>

@@ -3,235 +3,99 @@ import { View, Text, TextInput, FlatList, TouchableOpacity, Keyboard } from 'rea
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { useTheme } from './context/ThemeContext';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import * as Haptics from 'expo-haptics';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { useTheme } from './context/ThemeContext';
+import { useRestaurant } from './context/RestaurantsContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
+import { useNavigation,useRoute,useIsFocused } from '@react-navigation/native';
+import CustomModal from './ModalMenue';
 import Slider from '@react-native-community/slider';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-
+import { Rating } from 'react-native-ratings';
 import { ToastNotif } from './Utils';
 
 
-const NewAvisView = () => {
+function NewAvisView ({})  {
     const { theme, themeName } = useTheme();
-    const navigation = useNavigation();
+    const { typeRestaurants, setTypeRestaurants} = useRestaurant();
 
     const [inputValue, setInputValue] = useState('');
     const [suggestions, setSuggestions] = useState([]);
-    const [selectedPlat, setSelectedPlat] = useState('');
+    const [selectedRestaurant,setSelectedRestaurant] = useState('');
+    const refNomInput = useRef();
+    const [selectedName, setSelectedName] = useState(''); 
 
-    const [prix, setPrix] = useState(0);
-    const [previousSliderValue, setPreviousSliderValue] = useState(0);
-
-    const [isSliderActive, setIsSliderActive] = useState(false);
-    const [isCurrentDate, setIsCurrentDate] = useState(true);
-
-    const platsPredefinis = ['🍕 Pizza', '🍝 Pasta', '🥗 Salad', '🍔 Burger', '🍣 Sushi'];
+    const navigation = useNavigation();
+    const isFocused = useIsFocused();
+    const route = useRoute();
+    const  {currentMapRegion} = route.params || {};
+    const [avis,setAvis] = useState(null);
 
     const refInput = useRef(null);
     const refAvisInput = useRef(null);
 
-    const [date, setDate] = useState(null);
 
-    const platsGlobal = [
-        '🍕 Pizza',
-        '🍝 Pasta',
-        '🥗 Salad',
-        '🍔 Burger',
-        '🍣 Sushi',
-        '🍛 Curry',
-        '🍜 Ramen',
-        '🌮 Tacos',
-        '🥩 Steak',
-        '🍤 Shrimp',
-        '🥙 Kebab',
-        '🍲 Hotpot',
-        '🍱 Bento',
-        '🥖 Baguette',
-        '🍞 Bread',
-        '🥪 Sandwich',
-        '🍰 Cake',
-        '🍪 Cookies',
-        '🥧 Pie',
-        '🍮 Flan',
-        '🍫 Chocolate',
-        '🍬 Candy',
-        '🍿 Popcorn',
-        '🥐 Croissant',
-        '🍩 Donut',
-        '🥓 Bacon',
-        '🥞 Pancakes',
-        '🧇 Waffles',
-        '🍠 Sweet Potato',
-        '🍳 Eggs',
-        '🍟 Fries',
-        '🌭 Hot Dog',
-        '🍖 Ribs',
-        '🍗 Fried Chicken',
-        '🥥 Coconut',
-        '🍍 Pineapple',
-        '🍉 Watermelon',
-        '🍇 Grapes',
-        '🍒 Cherries',
-        '🍓 Strawberries',
-        '🍋 Lemon',
-        '🍌 Banana',
-        '🍎 Apple',
-        '🍏 Green Apple',
-        '🍊 Orange',
-        '🍐 Pear',
-        '🍑 Peach',
-        '🍈 Melon',
-        '🥝 Kiwi',
-        '🍅 Tomato',
-        '🌽 Corn',
-        '🥒 Cucumber',
-        '🥕 Carrot',
-        '🥦 Broccoli',
-        '🥬 Lettuce',
-        '🥔 Potato',
-        '🍆 Eggplant',
-        '🍄 Mushrooms',
-        '🌶️ Pepper',
-        '🧄 Garlic',
-        '🧅 Onion',
-        '🍚 Rice',
-        '🍘 Rice Cracker',
-        '🍢 Oden',
-        '🍡 Dango',
-        '🍧 Shaved Ice',
-        '🍨 Ice Cream',
-        '🍦 Soft Serve',
-        '🍹 Cocktail',
-        '🍸 Martini',
-        '🍷 Wine',
-        '🍺 Beer',
-        '🥂 Champagne',
-        '☕ Coffee',
-        '🍵 Tea',
-        '🥤 Soda',
-        '🍶 Sake',
-        '🧃 Juice',
-        '🥛 Milk',
-        '🍯 Honey',
-        '🧈 Butter',
-        '🥣 Cereal',
-        '🧀 Cheese',
-        '🍖 Ham',
-        '🥩 Beef',
-        '🍗 Chicken',
-        '🍖 Pork',
-        '🍤 Prawns',
-        '🐟 Fish',
-        '🐠 Salmon',
-        '🦐 Shrimp',
-        '🦑 Squid',
-        '🦀 Crab',
-        '🦞 Lobster',
-        '🍞 Toast',
-        '🥥 Coconut Water',
-        '🍉 Melon Juice',
-        '🍇 Grape Juice',
-        '🍒 Cherry Juice',
-        '🍓 Strawberry Shake',
-        '🍋 Lemonade',
-        '🍌 Banana Smoothie',
-        '🍎 Apple Pie',
-        '🍏 Green Apple Tart',
-        '🍊 Orange Sorbet',
-        '🍐 Pear Tart',
-        '🍑 Peach Cobbler',
-        '🥭 Mango',
-        '🍈 Melon Balls',
-        '🥝 Kiwi Slice',
-        '🍅 Tomato Soup',
-        '🌽 Corn on the Cob',
-        '🥒 Pickles',
-        '🥕 Carrot Cake',
-        '🥦 Broccoli Cheese',
-        '🥬 Lettuce Wrap',
-        '🥔 Mashed Potatoes',
-        '🍆 Eggplant Parmesan',
-        '🍄 Mushroom Risotto',
-        '🌶️ Spicy Chili',
-        '🧄 Garlic Bread',
-        '🧅 Onion Rings',
-        '🍚 Fried Rice',
-        '🍘 Seaweed Snack',
-        '🍢 Skewers',
-        '🍡 Mochi',
-        '🍧 Gelato',
-        '🍨 Sundae',
-        '🍦 Cone Ice Cream',
-        '🍹 Mojito',
-        '🍸 Cosmopolitan',
-        '🍷 Red Wine',
-        '🍺 Lager',
-        '🥂 Prosecco',
-        '☕ Espresso',
-        '🍵 Matcha',
-        '🥤 Lemon Soda',
-        '🍶 Plum Wine',
-        '🧃 Orange Juice',
-        '🥛 Almond Milk',
-        '🍯 Maple Syrup',
-        '🧈 Margarine',
-        '🥣 Porridge',
-        '🧀 Brie Cheese',
-        '🍖 Sausage',
-        '🥩 Filet Mignon',
-        '🍗 Drumstick',
-        '🍖 Ribs',
-        '🍤 Lobster Roll',
-        '🐟 Tuna',
-        '🐠 Cod',
-        '🦐 Scampi',
-        '🦑 Calamari',
-        '🦀 King Crab',
-        '🦞 Crawfish',
-        '🍞 Pita Bread',
-        '🥥 Coconut Ice Cream'
-      ];
+    const [isModalVisible, setIsModalVisible] = useState(false);
+
+    const openModal = () => {
+      setIsModalVisible(true);
+    };
+  
+    const closeModal = () => {
+      setIsModalVisible(false);
+    };
 
 
     useEffect(() => {
-        setSuggestions(platsPredefinis)
+        setSuggestions(typeRestaurants)
+
     }, []);
+
+    useEffect(() => {
+        if (isFocused) {
+          // Vérifiez s'il y a une nouvelle valeur dans les params
+          const {newAvis} = route.params || null;
+          setAvis(newAvis)
+        }
+      }, [isFocused]);
+
+    
 
     const handleInputChange = (text) => {
         setInputValue(text);
-        setSelectedPlat('');
+        setSelectedRestaurant('');
 
-            const filteredSuggestions = platsGlobal.filter((plat) =>
+            const filteredSuggestions = typeRestaurants.filter((plat) =>
             plat.toLowerCase().includes(text.toLowerCase())
         );
-        if (text.length > 0 && !platsPredefinis.includes(text)) {
-            filteredSuggestions.push('Ajouter ce plat');
+        if (text.length > 0 && !typeRestaurants.includes(text)) {
+            filteredSuggestions.push('Ajouter ce type de Restaurant');
             setSuggestions(filteredSuggestions);
 
         }
         else 
         {
-            setSuggestions(platsPredefinis);
-            console.log("setSuggestions");
+            setSuggestions(typeRestaurants);
         }
     
     };
 
     const handleSuggestionPress = (suggestion) => {
-        if (suggestion === 'Ajouter ce plat') {
 
-            console.log("Ajouter un plat à ce restaurant");
-            
+        //TODO
+        if (suggestion === 'Ajouter ce type de restaurant') {
+
+            //TODO
 
         } 
         else 
         {
-            setSelectedPlat(suggestion);
-            setInputValue(suggestion.slice(2));
+            setSelectedRestaurant(suggestion);
+            setInputValue(suggestion);
             // unfocus input
             refInput.current.blur();
             Haptics.notificationAsync(
@@ -243,47 +107,17 @@ const NewAvisView = () => {
         // setSuggestions([]);
     };
 
-
-    const handleSliderChange = (value) => {
-        setPrix(value);
-        if (Math.abs(value - previousSliderValue) >= 0.25) {
-            Haptics.selectionAsync();
-            setPreviousSliderValue(value);
+    const HandleSubmitName = (text) => 
+        {
+            Keyboard.dismiss();
+            setSelectedName(Text);
         }
-    };
+
+  
 
 
 
-    const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
-    const showDatePicker = () => {
-        setDatePickerVisibility(true);
-    };
-
-    const hideDatePicker = () => {
-        setDatePickerVisibility(false);
-    };
-
-    const cancelDatePicker = () => {
-        setDate(null);
-        hideDatePicker();
-        setIsCurrentDate(true);
-    };
-    const handleConfirm = (date) => {
-        
-        hideDatePicker();
-        // check if date is not in the future
-        if (new Date(date) > new Date()) {
-            
-            ToastNotif("La date ne peut pas être dans le futur", "times-circle", { button_background: "red", text: "white" }, "white", 3000);
-            setIsCurrentDate(true);
-            setDate(null);
-        }
-        else {
-            setIsCurrentDate(false);
-            setDate(date);
-        }
-    };
 
     return (
         <View style={{
@@ -299,22 +133,23 @@ const NewAvisView = () => {
             </TouchableOpacity>
             <View style={{ paddingHorizontal: 20 }}>
                 <Text style={{ fontFamily: "Inter-Black", fontSize: 24, color: theme.text }}>
-                    Ajouter un plat
+                    ✨ Ajouter une pépite
                 </Text>
             </View>
             
             {/* Input avec suggestions */}
-            <View style={{flexDirection : 'row', backgroundColor: selectedPlat == '' ? theme.light_gray : 'transparent', paddingVertical: 10, paddingHorizontal: 5, borderRadius: 5, marginTop: 10, marginHorizontal: 20 }}>
+            <View style={{flexDirection : 'row', 
+                backgroundColor: selectedRestaurant == '' ? theme.light_gray : theme.background_green, paddingVertical: 10, paddingHorizontal: 5, borderRadius: 5, marginTop: 20, marginHorizontal: 20 }}>
                 
                
                 <Text style={{ fontFamily: "Inter-Bold", fontSize: 15, color: theme.dark_gray }}>
-                {selectedPlat && selectedPlat.length > 0 ? selectedPlat.slice(0, 2) : '🍴'}
+                {'🍴'}
                 </Text>
 
                 <TextInput
-                    placeholder='Plat (pasta,...)'
+                    placeholder='Type de restaurant (pizzeria,...)'
                     placeholderTextColor={theme.dark_gray}
-                    style={{fontSize:selectedPlat == '' ? 15 : 18, fontFamily: selectedPlat == '' ?  "Inter-SemiBold" : "Inter-Bold",color : selectedPlat == '' ? theme.text : theme.text, marginLeft: 0, marginTop: 3 }}
+                    style={{fontSize:selectedRestaurant == '' ? 15 : 16, fontFamily: selectedRestaurant == '' ?  "Inter-SemiBold" : "Inter-SemiBold",color : selectedRestaurant == '' ? theme.text : theme.green, marginLeft: 0, marginTop: 3 }}
                     value={inputValue}
                     onChangeText={handleInputChange}
                     ref={refInput}
@@ -322,24 +157,23 @@ const NewAvisView = () => {
                 
             </View>
             {
-                selectedPlat === '' &&
+                selectedRestaurant === '' &&
             (
                 inputValue.length === 0 ? (
-                    <Text style={{ marginHorizontal: 22, color: theme.dark_gray, marginTop: 5,marginBottom : -2, fontFamily: "Inter-SemiBold" }}>
-                        Plats déjà ajoutés à ce restaurant :
-                    </Text>
+                    null
                 ) : 
 
                 suggestions.length > 1 && inputValue.length > 0 ? (
-                    <Text style={{ marginHorizontal: 22, color: theme.dark_gray, marginTop: 5,marginBottom : -2, fontFamily: "Inter-SemiBold" }}>
-                        Tous les plats :
-                    </Text>
+                    null
+                    // <Text style={{ marginHorizontal: 22, color: theme.dark_gray, marginTop: 5,marginBottom : -2, fontFamily: "Inter-SemiBold" }}>
+                         
+                    // </Text>
                 ) :
 
                 ((
                         suggestions.length == 1 && inputValue.length > 0 ? (
                             <Text style={{ marginHorizontal: 22, color: theme.red, marginTop: 5,marginBottom : -2, fontFamily: "Inter-SemiBold" }}>
-                                Ce plat n'existe pas dans l'appli, ameliore l'appli en l'ajoutant 😁
+                                Ce type de restaurant n'existe pas dans l'appli, ameliore l'appli en l'ajoutant 😁
                             </Text>
                         ) : null
                     )
@@ -357,196 +191,181 @@ const NewAvisView = () => {
                 )
             }
             {
-            selectedPlat === '' &&(
+            selectedRestaurant === '' &&(
 
-    <FlatList
-        data={ suggestions}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item,index }) => (
-            <TouchableOpacity activeOpacity={0.8} onPress={() => handleSuggestionPress(item)}>
-                <View style={{ marginHorizontal: 20,marginBottom : 4, borderColor : theme.gray,borderWidth : 1 ,backgroundColor : theme.light_gray,borderRadius : 10  }}>
-                    <View style={{ padding: 10,flexDirection: 'row',alignItems : "center"}}>
-                    {
-                        (index === suggestions.length - 1) && inputValue.length > 0  ? (
-                            <>
-                            <FontAwesome name="plus-circle" size={16} color={theme.dark_gray} style={{marginRight : 5  }} />
-                            <Text style={{  color: theme.text,fontFamily : "Inter-Medium" }}>
-                                {"Ajouter '"}
-                                <Text style={{  color: theme.text,fontFamily : "Inter-Black" }}>{inputValue}</Text>
-                                {"' à l'appli"} 
+        <FlatList
+            data={ suggestions}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item,index }) => (
+                <TouchableOpacity activeOpacity={0.8} onPress={() => handleSuggestionPress(item)}>
+                    <View style={{ marginHorizontal: 20,marginBottom : 4, borderColor : theme.gray,borderWidth : 1 ,backgroundColor : theme.light_gray,borderRadius : 10  }}>
+                        <View style={{ padding: 10,flexDirection: 'row',alignItems : "center"}}>
+                        {
+                            (index === suggestions.length - 1) && inputValue.length > 0  ? (
+                                <>
+                                <FontAwesome name="plus-circle" size={16} color={theme.dark_gray} style={{marginRight : 5  }} />
+                                <Text style={{  color: theme.text,fontFamily : "Inter-Medium" }}>
+                                    {"Ajouter '"}
+                                    <Text style={{  color: theme.text,fontFamily : "Inter-Black" }}>{inputValue}</Text>
+                                    {"' à l'appli"} 
+                                </Text>
+                                </>
+                            ) : 
+                            <Text style={{  color: theme.text,fontFamily : "Inter-Bold" }}>
+                                {item}
                             </Text>
-                            </>
-                        ) : 
-                        <Text style={{  color: theme.text,fontFamily : "Inter-Bold" }}>
-                            {item}
-                        </Text>
-                    }
-                    
+                        }
+                        
+                        </View>
                     </View>
-                </View>
-            </TouchableOpacity>
-        )}
-                    style={{
-                        maxHeight: ( suggestions.length > 4 ? 4 : suggestions.length ) * 47 ,
-                        borderRadius: 5,
-                        marginTop: 5,
-                        zIndex: 1,
-                    }}
-                    scrollEnabled={ suggestions.length > 4 ? true : false}
-                    contentContainerStyle={{ flexGrow: 1 }}
+                </TouchableOpacity>
+            )}
+                        style={{
+                            maxHeight: ( suggestions.length > 4 ? 4 : suggestions.length ) * 47 ,
+                            borderRadius: 5,
+                            marginTop: 5,
+                            zIndex: 1,
+                        }}
+                        scrollEnabled={ suggestions.length > 4 ? true : false}
+                        contentContainerStyle={{ flexGrow: 1 }}
                 />
             )}
 
 
-             {/* Slider pour le prix */}
-             <View style={{
-                marginHorizontal: 20,
-                marginTop: 5,
-                marginBottom: 0,
-                paddingVertical: 10,
-                paddingHorizontal: 10,
-                backgroundColor: theme.light_gray,
-                borderRadius: 10,
-             }}>
-                <Text style={{ fontFamily: "Inter-Bold", fontSize: 15, color: theme.dark_gray }}>
-                    Prix :
-                </Text>
-                <View style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                }}>
-                    <Slider
-                        style={{ flex: 1, marginRight: 10 }}
-                        minimumValue={0}
-                        maximumValue={12}
-                        step={0.25}
-                        value={prix}
-                        onValueChange={handleSliderChange}
-                        minimumTrackTintColor={theme.dark_gray}
-                        maximumTrackTintColor={theme.background}
-                        thumbTintColor={theme.dark_gray}
-                        thumbStyle={{
-                            width: 10, // Réduire la taille du thumb en ajustant la largeur
-                            height: 10, // Réduire la taille du thumb en ajustant la hauteur
-                            borderRadius: 0, // Assurez-vous que le thumb reste circulaire
-                        }}
-                        onSlidingStart={() => 
-                            {setIsSliderActive(true)
+            
 
-                            }}
-
-                        onSlidingComplete={() =>
-                            {setIsSliderActive(false)
-                               Haptics.notificationAsync(
-                                Haptics.NotificationFeedbackType.Success
-                                ) 
-                            }
-                        }
-                    />
-                    <Text style={{ fontFamily: "Inter-Bold", fontSize: 15, color: isSliderActive ? theme.gray : theme.text }}>
-                        {prix.toFixed(2)} €
-                    </Text>
-                </View>
-            </View>
-
-            {/* Input pour l'avis */}
-            <TouchableOpacity activeOpacity={0.8} onPress={()=>
+                <TouchableOpacity activeOpacity={0.8} onPress={()=>
                 {
                     //donner le focus à l'input
-                    refAvisInput.current.focus();
+                    refNomInput.current.focus();
                 }}>
-            <View style={{ backgroundColor: theme.light_gray, paddingVertical: 5, paddingHorizontal: 10, borderRadius: 5, marginTop: 10, marginHorizontal: 20 }}>
-                <Text style={{ width: "100%", fontFamily: "Inter-Bold", fontSize: 15, color: theme.dark_gray }}>
-                    💬 Avis
-                </Text>
-                <TextInput
-                    numberOfLines={3}
-                    multiline={true}
-                    placeholder='Très bon... '
-                    placeholderTextColor={theme.gray}
-                    blurOnSubmit={true}
-                    onSubmitEditing={Keyboard.dismiss}
-                    ref={refAvisInput}
-                    style={{
-                        fontFamily: "Inter-SemiBold",
-                        marginLeft: 2,
-                        textAlignVertical: 'top',
-                        color: theme.text,
-                        maxHeight: 100,
-                        marginBottom: 3
-                    }}
-                />
-            </View>
-            </TouchableOpacity>
-
-
-            <View style={{ marginHorizontal: 20, marginTop : 10, flexDirection : "row",justifyContent : "space-between" }} >
-           <View style={{flex : 1}}>
-            <BouncyCheckbox
-                  size={23}
-                  fillColor={theme.blue}
-                  // unfillColor={theme.background}
-                  iconStyle={{ borderColor: theme.blue }}
-                  onPress={() => {
-                    if(isCurrentDate)
-                        {
-                            showDatePicker();
-                        }
-                    else
-                        {
-                            setDate(null);
-                        }
-                    setIsCurrentDate(!isCurrentDate)
-                }}
-                  isChecked={isCurrentDate}
-                  text={"Date actuelle"}
-                  textStyle={{ color: date ? theme.gray : theme.text,fontFamily: 'Inter-SemiBold',fontSize: 16,textDecorationLine: 'none', margin : -10}}
-                  textContainerStyle={{marginHorizontal : 10, flex : 1}}
-                />
-                </View>
-                <Text style={{ fontFamily: "Inter-SemiBold", fontSize: 15, color: date ? theme.text : theme.dark_gray,marginRight : 5 }}>
-                    {date
-                    ? date.toLocaleDateString('fr-FR', {
-                        weekday: undefined, // Ne pas afficher le jour de la semaine
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    })
-                    : 'Aujourd\'hui'}
-                </Text>
-            </View>
-
-            <TouchableOpacity activeOpacity={0.8}>
-                <View style={{
-                    backgroundColor: theme.text,
-                    margin: 20,
-                    justifyContent: "center",
-                    alignItems: "center",
-                    borderRadius: 10
-                }}>
-                    <Text style={{
-                        fontFamily: "Inter-Bold",
-                        fontSize: 15,
-                        color: theme.background,
-                        padding: 10
-                    }}>
-                        Envoyer
-                    </Text>
-                </View>
-            </TouchableOpacity>
-
-
-            <DateTimePickerModal
-                isVisible={isDatePickerVisible}
-                mode="date"
-                onConfirm={handleConfirm}
-                onCancel={cancelDatePicker}
-                isDarkModeEnabled={themeName === 'dark'}
-            />
             
+            <View style={{flexDirection : 'row', backgroundColor: selectedName == '' ? theme.light_gray : theme.background_green, paddingVertical: 10, paddingHorizontal: 5, borderRadius: 5, marginTop: 10, marginHorizontal: 20 }}>
+                
+               
+                <Text style={{ fontFamily: "Inter-Bold", fontSize: 15, color: theme.dark_gray }}>
+                {'✏️'}
+                </Text>
+
+                <TextInput
+                    placeholder='Nom du restaurant...'
+                    placeholderTextColor={theme.dark_gray}
+                    style={{width : '100%',fontSize:selectedName == '' ? 16 : 16, fontFamily: selectedName == '' ?  "Inter-SemiBold" : "Inter-SemiBold",color : selectedName == '' ? theme.text : theme.green, marginLeft: 5, marginTop: 3 }}
+                    onSubmitEditing={HandleSubmitName}
+                    onChangeText={()=>setSelectedName('')}
+                    ref={refNomInput}
+                />
+                
+            </View>
+            </TouchableOpacity>  
+
+
+            {/* <View style={{flexShrink : 2, flex : 1}}/> */}
+
+            {
+                avis ? (
+                
+                <View style={{marginHorizontal : 20,marginTop : 20}}>
+                    <Text style={{marginBottom : 6, fontFamily: 'Inter-SemiBold', fontSize: 15, color: theme.gray}}>Votre avis :</Text>
+                <AvisComp review={avis} theme={theme} openModal={openModal}/> 
+                
+                </View>)
+                :
+                
+                (
+            <TouchableOpacity disabled={selectedName == '' || selectedRestaurant == ''} activeOpacity={0.8} onPress={()=>
+                    {
+                        navigation.navigate("NewAvisView",{envoieDirect : false,goBackScreenName : "NewRestaurantView"})
+                        
+                        // ToastNotif("Ajout d'un avis","check-circle",theme,"green",2000)
+                        }}>
+                <View style={{marginTop : 20, backgroundColor: selectedName != '' && selectedRestaurant != '' ? theme.blue : theme.light_gray, marginHorizontal: 20, justifyContent: 'center', alignItems: 'center', borderRadius: 10 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <FontAwesome name={"plus"} color={selectedName != '' && selectedRestaurant != '' ? theme.text : theme.gray} size={14} />
+                    <Text style={{ marginLeft: 5, fontFamily: 'Inter-Bold', fontSize: 13.5, color: selectedName != '' && selectedRestaurant != '' ? theme.text : theme.gray, paddingVertical: 12 }}>Ajouter un plat</Text>
+                    </View>
+                </View>
+            </TouchableOpacity>)
+
+
+            }
+
+
+            {avis && <TouchableOpacity disabled={selectedName == '' || selectedRestaurant == ''} activeOpacity={0.8} onPress={()=>
+                    {
+                        navigation.navigate("NewAvisView",{envoieDirect : false,goBackScreenName : "NewRestaurantView"})
+                        
+                        // ToastNotif("Ajout d'un avis","check-circle",theme,"green",2000)
+                        }}>
+                <View style={{marginTop : 20, backgroundColor: selectedName != '' && selectedRestaurant != '' ? theme.blue : theme.light_gray, marginHorizontal: 20, justifyContent: 'center', alignItems: 'center', borderRadius: 10 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <FontAwesome5 name={"concierge-bell"} color={selectedName != '' && selectedRestaurant != '' ? theme.text : theme.gray} size={16} />
+                    <Text style={{ marginLeft: 5, fontFamily: 'Inter-Bold', fontSize: 13.5, color: selectedName != '' && selectedRestaurant != '' ? theme.text : theme.gray, paddingVertical: 12 }}> Suggérer ce restaurant</Text>
+                    </View>
+                </View>
+            </TouchableOpacity>}
+            <CustomModal
+                    visible={isModalVisible}
+                    onClose={closeModal}
+                    title={"Commentaire"}
+                    options={
+                        [
+                            { label: "Modifier", handle: () => {navigation.navigate("NewAvisView",{envoieDirect : false,avisModifier : avis,goBackScreenName : "NewRestaurantView"})
+                             closeModal()} },
+                            { label: "Supprimer",dangerous : true, handle: () => {setAvis(null); closeModal()} },
+                        ]}
+                /> 
         </View>
     );
 };
+
+
+const AvisComp = ({review,theme,openModal}) => {
+
+
+    return(
+        <View style={{  backgroundColor : theme.light_gray,padding : 5,paddingHorizontal : 15,borderRadius : 10, }}>
+            
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <View>
+                                    <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 15, color: theme.text }}>
+                                        {review.emoji} {review.dish}
+                                    </Text>
+                                </View>
+                                <View style={{ backgroundColor: theme.blue, padding: 2,paddingHorizontal : 4, borderRadius: 5, marginLeft: 3, alignItems: 'center' }}>
+                                    <Text style={{ color: "white", fontFamily: 'Inter-SemiBold', fontSize: 13 }}>
+                                        {review.price}€
+                                    </Text>
+                                </View>
+                            </View>
+                            <View>
+                                <TouchableOpacity onPress={openModal}>
+                                <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 11, color: 'gray', textDecorationLine: 'none' }}>
+                                    <Feather name="more-horizontal" size={25} color="gray" />
+                                </Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+
+                        <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 15, color: 'gray', marginVertical: 5 }}>
+                        {review.comment}
+                        </Text>
+                        
+                        {/* <Rating
+                        type='custom'
+                        ratingColor='#FFD700'
+                        ratingBackgroundColor='#D3D3D3'
+                        startingValue={review.rating}
+                        imageSize={15}
+                        
+                        readonly
+                        tintColor={theme.light_gray}
+                        style={{ alignSelf: 'flex-start' }}
+                        /> */}
+                    </View>
+    )
+}
 
 export default NewAvisView;

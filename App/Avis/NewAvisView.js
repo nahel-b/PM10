@@ -5,7 +5,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useTheme } from '../context/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation,useRoute } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 
 import Slider from '@react-native-community/slider';
@@ -13,6 +13,7 @@ import BouncyCheckbox from "react-native-bouncy-checkbox";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 import { ToastNotif } from '../Utils';
+import { Rating } from 'react-native-ratings';
 
 
 const NewAvisView = () => {
@@ -35,6 +36,7 @@ const NewAvisView = () => {
     const refAvisInput = useRef(null);
 
     const [date, setDate] = useState(null);
+    const [comment,setComment] = useState('');
 
     const platsGlobal = [
         '🍕 Pizza',
@@ -196,9 +198,21 @@ const NewAvisView = () => {
         '🥥 Coconut Ice Cream'
       ];
 
+    const route = useRoute();
+    const  {avisModifier} = route?.params || {};
+    const {goBackScreenName} = route?.params || null;
+    const {EnvoieDirect}= route.params || true;
 
     useEffect(() => {
         setSuggestions(platsPredefinis)
+        if(avisModifier)
+            {
+                setSelectedPlat(avisModifier.emoji + avisModifier.dish)
+                setInputValue(avisModifier.dish)
+                setPrix(avisModifier.price)
+                setComment(avisModifier.comment)
+
+            }
     }, []);
 
     const handleInputChange = (text) => {
@@ -304,7 +318,7 @@ const NewAvisView = () => {
             </View>
             
             {/* Input avec suggestions */}
-            <View style={{flexDirection : 'row', backgroundColor: selectedPlat == '' ? theme.light_gray : 'transparent', paddingVertical: 10, paddingHorizontal: 5, borderRadius: 5, marginTop: 10, marginHorizontal: 20 }}>
+            <View style={{flexDirection : 'row', backgroundColor: selectedPlat == '' ? theme.light_gray : 'transparent', paddingVertical: 10, paddingHorizontal: 5, borderRadius: 5, marginTop: 30, marginHorizontal: 20 }}>
                 
                
                 <Text style={{ fontFamily: "Inter-Bold", fontSize: 15, color: theme.dark_gray }}>
@@ -401,8 +415,8 @@ const NewAvisView = () => {
              {/* Slider pour le prix */}
              <View style={{
                 marginHorizontal: 20,
-                marginTop: 5,
-                marginBottom: 0,
+                marginTop: 15,
+                marginBottom: 5,
                 paddingVertical: 10,
                 paddingHorizontal: 10,
                 backgroundColor: theme.light_gray,
@@ -466,6 +480,8 @@ const NewAvisView = () => {
                     placeholder='Très bon... '
                     placeholderTextColor={theme.gray}
                     blurOnSubmit={true}
+                    onChangeText={(text)=>{setComment(text)}}
+                    value={comment}
                     onSubmitEditing={Keyboard.dismiss}
                     ref={refAvisInput}
                     style={{
@@ -481,7 +497,7 @@ const NewAvisView = () => {
             </TouchableOpacity>
 
 
-            <View style={{ marginHorizontal: 20, marginTop : 10, flexDirection : "row",justifyContent : "space-between" }} >
+            <View style={{ marginHorizontal: 20,marginBottom : 10, marginTop : 30, flexDirection : "row",justifyContent : "space-between" }} >
            <View style={{flex : 1}}>
             <BouncyCheckbox
                   size={23}
@@ -517,9 +533,33 @@ const NewAvisView = () => {
                 </Text>
             </View>
 
-            <TouchableOpacity activeOpacity={0.8}>
+            <TouchableOpacity activeOpacity={0.8}
+                    disabled={!(selectedPlat && prix != 0 && comment && comment.length>0)}
+                    onPress={
+                        ()=>
+                            
+                            {
+                                if(!EnvoieDirect && goBackScreenName)
+                                    {
+                                        const datemtn = new Date();
+                                navigation.navigate(goBackScreenName,
+                                    {newAvis : 
+                                        {
+                                            emoji : selectedPlat.slice(0, 2),
+                                            dish : selectedPlat.slice(2),
+                                            comment : comment,
+                                            price : prix,
+                                            date : date ? date.toDateString() : datemtn.toDateString(),
+                                            rating : 5
+                                        }
+                                    }
+                                )}
+
+                            }
+                    }
+            >
                 <View style={{
-                    backgroundColor: theme.text,
+                    backgroundColor: selectedPlat && prix != 0 && comment && comment.length>0 ? theme.text :  theme.light_gray,
                     margin: 20,
                     justifyContent: "center",
                     alignItems: "center",
@@ -531,7 +571,7 @@ const NewAvisView = () => {
                         color: theme.background,
                         padding: 10
                     }}>
-                        Envoyer
+                        {EnvoieDirect ? "Envoyer" : "Valider"}
                     </Text>
                 </View>
             </TouchableOpacity>

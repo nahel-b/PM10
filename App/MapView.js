@@ -315,6 +315,7 @@ const App = () => {
           }
           else
           {
+            navigation.navigate("NewRestaurantView",{currentMapRegion : currentMapRegion})
             console.log(currentMapRegion);
           }
             
@@ -460,7 +461,8 @@ const App = () => {
           </TouchableOpacity>
         </View> */}
 
-        <View style={{ flexDirection : "row", alignSelf : "center",alignItems : "flex-start",position : "absolute",top : insets.top, width : "90%"}}>
+        <View style={{  alignSelf : "center",position : "absolute",top : insets.top,width : "100%"}}>
+          <View style={{ flexDirection : "row", alignSelf : "center",alignItems : "flex-start", width : "90%"}}>
             <View style={{flexDirection : "row",borderRadius : 15,backgroundColor :  theme.background,
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 1 },
@@ -469,7 +471,7 @@ const App = () => {
                 paddingVertical : 10, paddingHorizontal : 7,flex : 1,flexGrow : 2}}>
                 <Ionicons name="search" size={20} color={theme.dark_gray}/>
                 <Input />
-            
+              
             </View>
 
             <View style={{ flexDirection : "row", alignSelf : "center", justifyContent : "flex-end",alignItems : "center"}}>
@@ -501,10 +503,11 @@ const App = () => {
                 </TouchableOpacity>
 
             </View>
-
+            
             
 
         </View>
+        
             {/* <TouchableOpacity activeOpacity={0.5} onPress={()=>navigation.navigate("ReglageView")}>
             <View style={{marginLeft : 5,
                 
@@ -521,6 +524,21 @@ const App = () => {
             </TouchableOpacity> */}
         </View>
 
+
+        <View style={{width : "95%",alignItems : "flex-end", justifyContent : "flex-end", marginTop : 5}} >
+
+        <TouchableOpacity activeOpacity={0.5} onPress={()=>{}}>
+              
+              <View style={{backgroundColor : theme.background, padding : 10,borderRadius : 13,aspectRatio : 1,alignItems : "center"}}>
+
+              <FontAwesome6 name="user-secret" size={20} color={theme.red} style={{ }} />
+
+              </View>
+
+        </TouchableOpacity>
+        </View>
+
+        </View>
         
 
 
