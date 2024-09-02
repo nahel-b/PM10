@@ -2,6 +2,7 @@ export const Colors = {
     light: {
 
         blue : "rgb(65,127,227)",
+        background_blue : "rgba(65,127,227,0.2)",
         light_blue : "rgb(240,200,222)",
         green : "rgb(91,169,63)", 
         background_green : "rgba(91,169,63,0.2)", 
@@ -13,10 +14,12 @@ export const Colors = {
         text_light : "gray",
         red : "rgb(255,0,0)",
         background_red : "rgba(255,0,0,0.2)"
+
     },
     dark: {
 
         blue : "rgb(65,127,227)",
+        background_blue : "rgba(65,127,227,0.2)",
         light_blue : "rgb(240,200,222)",
         green : "rgb(91,169,63)", 
         background_green : "rgba(91,169,63,0.2)", 

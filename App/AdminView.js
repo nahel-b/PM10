@@ -19,7 +19,8 @@ const reviews = [
       price: 5.5,
       comment: "Le boeuf était parfaitement cuit, tendre et savoureux. L'accompagnement de légumes était délicieux.",
       rating: 4.5,
-      emoji: "🌯"
+      emoji: "🌯",
+      nbReport : 2
     },
     {
       name: "Marie Martin",
@@ -27,7 +28,8 @@ const reviews = [
       price: 5.5,
       comment: "Un plat classique, mais avec une touche moderne. Les saveurs étaient bien équilibrées.",
       rating: 4,
-      emoji: "🌯"
+      emoji: "🌯",
+        nbReport : 1
     },
     {
       name: "Pierre Lefèvre",
@@ -35,7 +37,8 @@ const reviews = [
       price: 8,
       comment: "plat excellent, mais la pâte aurait pu être un peu plus croustillante.",
       rating: 4.5,
-      emoji: "🥗"
+      emoji: "🥗",
+      nbReport : 3
     },
     {
       name: "Sophie Durand",
@@ -191,10 +194,15 @@ function AdminView ({})  {
             alignSelf: "center"
         }}>
             
-            <View style={{ paddingHorizontal: 20,marginTop : insets.top }}>
+            <View style={{flexDirection : "row",justifyContent : "space-between", alignItems : "center", paddingHorizontal: 20,marginTop : insets.top }}>
                 <Text style={{ fontFamily: "Inter-Black", fontSize: 24, color: theme.text }}>
                     🔮 Admin
                 </Text>
+                <TouchableOpacity onPress={() => { navigation.goBack() }}>
+                <View style={{ alignItems: "flex-end", marginRight: 0, }}>
+                    <Ionicons name="close" size={30} color="gray" />
+                </View>
+            </TouchableOpacity>
             </View>
             
 
@@ -203,9 +211,12 @@ function AdminView ({})  {
             <View style={styles.switchContainer}>
             <Animated.View style={[styles.indicator, animatedIndicatorStyle]} />
             <TouchableOpacity style={styles.switchButton} onPress={() => handleSwitch(0)}>
-            <View style={{flexDirection:"row",alignItems:"center",marginHorizontal : 10}}>
+            <View style={{flexDirection:"row",alignItems:"center",justifyContent : "center",marginHorizontal : 10}}>
             <MaterialIcons name="report" size={18} color={theme.text} />
                 <Text style={styles.buttonText}>Report</Text>
+                <View style={{backgroundColor : theme.background_blue, borderRadius : 50, padding : 2,marginLeft : 3}}>
+                <Text style={{fontFamily : 'Inter-Black', color : theme.blue}}>3</Text>
+                </View>
                 </View>
             </TouchableOpacity>
             <TouchableOpacity style={styles.switchButton} onPress={() => handleSwitch(1)}>
@@ -259,7 +270,7 @@ const Report = ({theme}) => {
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             
 
-            <ScrollView style={{ width : "100%",alignSelf : "center", marginTop : 10}}>
+            <ScrollView style={{ width : "100%",alignSelf : "center", marginTop : 30}}>
                 <View style={{alignItems: 'center', width : "100%", alignSelf : "center" }}>
             {reviews.map((review, index) => (
 
@@ -301,11 +312,11 @@ const AvisComp = ({review,theme,openModal}) => {
                                         {review.emoji} {review.dish}
                                     </Text>
                                 </View>
-                                {/* <View style={{ backgroundColor: theme.blue, padding: 2,paddingHorizontal : 4, borderRadius: 5, marginLeft: 3, alignItems: 'center' }}>
-                                    <Text style={{ color: "white", fontFamily: 'Inter-SemiBold', fontSize: 13 }}>
-                                        {review.price}€
+                                <View style={{ backgroundColor: theme.white, padding: 2,paddingHorizontal : 4, borderRadius: 5, marginLeft: 3, alignItems: 'center' }}>
+                                    <Text style={{marginTop : 3, color: theme.dark_gray, fontFamily: 'Inter-SemiBold', fontSize: 13 }}>
+                                        {review.nbReport} report
                                     </Text>
-                                </View> */}
+                                </View>
                             </View>
                             <View>
                                 <TouchableOpacity onPress={openModal}>
