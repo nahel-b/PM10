@@ -11,7 +11,8 @@ export const Colors = {
         background : "rgb(255,255,255)",
         text : "rgb(0,0,0)",
         text_light : "gray",
-        red : "red"
+        red : "rgb(255,0,0)",
+        background_red : "rgba(255,0,0,0.2)"
     },
     dark: {
 
@@ -25,7 +26,8 @@ export const Colors = {
         background : "#1c1c1e",
         text : "#fff",
         text_light: '#ccc',
-        red : "rgb(238, 50, 50)"
+        red : "rgb(238, 50, 50)",
+        background_red : "rgba(238, 50, 50,0.2)"
     },
     dark2: {
         background: '#1c1c1e',

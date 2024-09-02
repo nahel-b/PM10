@@ -56,7 +56,7 @@ const CustomModal = ({ visible, onClose, options,title }) => {
       color: theme.text,
       textAlign: 'center',
       fontSize: 16,
-      fontFamily: 'Inter-Medium',
+      fontFamily: 'Inter-SemiBold',
       marginHorizontal : 30,
     },
     closeButton: {

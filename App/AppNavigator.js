@@ -7,6 +7,7 @@ import AvisView from './Avis/AvisView';
 import ReglageView from './ReglageView';
 import NewAvisView from './Avis/NewAvisView';
 import NewRestaurantView from './NewRestaurantView'
+import AdminView from './AdminView'
 
 import 'react-native-gesture-handler';
 import { enableScreens } from 'react-native-screens';
@@ -24,7 +25,16 @@ export default function AppNavigator({ isAuthenticated }) {
       >
         {isAuthenticated ? (
           <>
-            <Stack.Screen 
+
+            <Stack.Screen
+            name="AdminView"
+            component={AdminView}
+            options={{
+              ...TransitionPresets.ModalPresentationIOS, // Applique l'effet modal
+             
+            }}
+          />
+          <Stack.Screen
               name="MapView" 
               component={MapView} 
               options={{

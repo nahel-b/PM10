@@ -149,7 +149,8 @@ const App = () => {
     const [mapKey, setMapKey] = useState('map1');
     const [mapType, setMapType] = useState('standard');
 
-    const [addingNewRestaurant, setAddingNewRestaurant] = useState(false);
+    const [addingNewRestaurant, setAddingNewRestaurant] = useState(true);
+    const [replacingNewRestaurant,setReplacingNewRestaurant] = useState(false)
 
     const insets = useSafeAreaInsets();
 
@@ -315,8 +316,15 @@ const App = () => {
           }
           else
           {
+            if(addingNewRestaurant){
             navigation.navigate("NewRestaurantView",{currentMapRegion : currentMapRegion})
-            console.log(currentMapRegion);
+            console.log(currentMapRegion);}
+            else{
+              
+              setReplacingNewRestaurant(false)
+              console.log("replace fin")
+            
+            }
           }
             
         }
@@ -424,45 +432,22 @@ const App = () => {
           }
         </MapView>
   
-        {!addingNewRestaurant && selectedMarker && (
+        {!addingNewRestaurant && !replacingNewRestaurant && selectedMarker && (
           <ModalMarker
             selectedMarker={selectedMarker}
             closeModal={closeModal}
             animatedHeight={animatedHeight}
+            setReplacingNewRestaurant={setReplacingNewRestaurant}
           />
         )} 
   
-        {/* <View style={{
-          position: 'absolute',
-          bottom: 20,
-          right: 20,
-          backgroundColor: theme.background,
-          borderRadius: 50,
-          padding: 0,
-          width: 60,
-          height: 60,
-          zIndex: 1,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.8,
-          shadowRadius: 2,
-          elevation: 5,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
-          <TouchableOpacity onPress={handleLocationButtonPress}>
-            {loading ? (
-              <ActivityIndicator size="small" color="black" />
-            ) : error ? (
-              <Ionicons name="alert" size={30} color="blue" />
-            ) : (
-              <FontAwesome6 name="location-crosshairs" size={30} color="black" />
-            )}
-          </TouchableOpacity>
-        </View> */}
+        
 
-        <View style={{  alignSelf : "center",position : "absolute",top : insets.top,width : "100%"}}>
-          <View style={{ flexDirection : "row", alignSelf : "center",alignItems : "flex-start", width : "90%"}}>
+         <View style={{  alignSelf : "center",position : "absolute",top : insets.top,width : "100%"}}>
+          
+         {!addingNewRestaurant && !replacingNewRestaurant &&
+         <>
+         <View style={{ flexDirection : "row", alignSelf : "center",alignItems : "flex-start", width : "90%"}}>
             <View style={{flexDirection : "row",borderRadius : 15,backgroundColor :  theme.background,
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 1 },
@@ -506,22 +491,8 @@ const App = () => {
             
             
 
-        </View>
-        
-            {/* <TouchableOpacity activeOpacity={0.5} onPress={()=>navigation.navigate("ReglageView")}>
-            <View style={{marginLeft : 5,
-                
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.5,
-                shadowRadius: 3,
-            }}>
-                {!addingNewRestaurant && <Ionicons name="cog" size={33} color={theme.background} /> }
-            </View>
+        </View> 
 
-            
-
-            </TouchableOpacity> */}
         </View>
 
 
@@ -537,6 +508,34 @@ const App = () => {
 
         </TouchableOpacity>
         </View>
+        </>}
+
+        {(addingNewRestaurant || replacingNewRestaurant) && <View style={{width : "95%",alignItems : "center", justifyContent : "center", marginTop : -5}} >
+
+              
+
+        <View style={{
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.5,
+                shadowRadius: 3,
+                backgroundColor : theme.background,
+                borderRadius : 15,
+                padding : 10.5,
+                paddingHorizontal : 15,
+                marginTop : 10,
+                flexDirection : "row",
+            }}>
+                <Text style={{fontSize : 18,fontFamily : "Inter-Bold",
+
+                  color : theme.text
+
+                }}>Place le restaurant sur la carte</Text>
+
+                </View>
+
+        </View>}
+
 
         </View>
         
@@ -553,7 +552,7 @@ const App = () => {
           />
         )} */}
          {/* Point fixe au centre de l'écran */}
-            {addingNewRestaurant && (
+            {(addingNewRestaurant||replacingNewRestaurant) && (
             <View style={{
                 position: 'absolute',
                 top: '50%',
@@ -564,13 +563,13 @@ const App = () => {
                 justifyContent: 'center',
                 alignItems: 'center',
             }} >
-                <FontAwesome6 style={{alignSelf : "center"}} name="crosshairs" size={30} color={theme.text} />
-            
+                {/* <FontAwesome6 style={{alignSelf : "center"}} name="crosshairs" size={30} color={theme.text} /> */}
+                <CustomPin theme={theme} text={"Nouvelle pépite"}/>
              </View>
             )}
   
         {/* Bouton de localisation */}
-        {!addingNewRestaurant && <View style={{
+        {!addingNewRestaurant && !replacingNewRestaurant && <View style={{
           position: 'absolute',
           bottom: 80,
           right: 20,
@@ -601,7 +600,7 @@ const App = () => {
           </TouchableOpacity>
         </View>}
 
-        {!addingNewRestaurant && <View style={{
+        {!addingNewRestaurant && !replacingNewRestaurant && <View style={{
           position: 'absolute',
           bottom: 20,
           right: 20,
@@ -626,7 +625,7 @@ const App = () => {
           </TouchableOpacity>
         </View>}
 
-        {addingNewRestaurant && <View style={{
+        {(addingNewRestaurant|| replacingNewRestaurant) && <View style={{
           position: 'absolute',
           bottom: 20,
           alignSelf : "center",
@@ -638,7 +637,13 @@ const App = () => {
           justifyContent: "space-around",
           alignItems: 'center',
         }}>
-            <TouchableOpacity onPress={() => setAddingNewRestaurant(false)}>
+            <TouchableOpacity onPress={() => {
+
+              if(addingNewRestaurant){
+              setAddingNewRestaurant(false)}
+              else{setReplacingNewRestaurant(false)}
+              
+              }}>
             <View style={{flexDirection : 'row',alignItems : "center",
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 2 },
@@ -689,7 +694,7 @@ const images = {
 
 
 
-const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
+const ModalMarker = ({ selectedMarker, closeModal, animatedHeight,setReplacingNewRestaurant }) => {
     const image = images[selectedMarker.image];
     const { theme } = useTheme();
 
@@ -795,6 +800,14 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
     }, [selectedMarker]);
 
 
+    const handleReplaceResto = () => 
+      {
+
+        closeMenueModal()
+        closeModal()
+        setReplacingNewRestaurant(true)
+        
+      }
 
 
     const handleDishPress = (dish) => {
@@ -1138,7 +1151,7 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
                     title={selectedMarker.title}
                     options={
                         [
-                            { label: "Le restaurant n'est pas bien placé", handle: () => console.log("Modifier") },
+                            { label: "Le restaurant n'est pas bien placé", handle: () => handleReplaceResto() },
                             { label: "Les horraires ont changées", handle: () => console.log("Modifier") },
                             { label: "Le nom ou le type de restaurant est incorrect", handle: () => console.log("Modifier") },
                             { label: "Le restaurant n'existe pas",dangerous : true, handle: () => console.log("Supprimer") },
@@ -1166,27 +1179,44 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight }) => {
     );
   };
 
-const CustomMarker = ({ marker, handleMarkerPress }) => {
-  const image = images[marker.image];
+const CustomPin = ({ text, theme }) => {
 
   return (
-        <Marker
-            coordinate={marker.coordinate}
-            onPress={() => handleMarkerPress(marker)}
-            anchor={{ x: 0.5, y: 0 }}
-            >
-        <View style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center' }}>
-            <Image 
-            source={require('./assets/images/marker.png')}
-            style={{ width: 40, height: 40, position: 'absolute' }}
-            />
-            <Image
-            source={image}
-            style={{ width: 25, height: 25, position: 'absolute',top : -2 }}
-            />
-        </View>
-    </Marker>
+    <Animated.View style={{
+      borderRadius: 10,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.5,
+      paddingVertical : 8,
+      paddingHorizontal : 13,justifyContent: 'flex-start', alignItems: 'flex-start', 
+      backgroundColor: theme.blue
+    }}>
+      
+      
+
+      <Text style={{  fontFamily: 'Inter-Black', fontSize: 14, color: theme.text }}>{text}</Text>
+      
+    <View style={{
+        width: 0,
+        height: 0,
+        borderLeftWidth: 20,
+        borderRightWidth: 20,
+        borderTopWidth: 15,
+        bottom: -12,
+        position: 'absolute',
+        borderLeftColor: 'transparent',
+        borderRightColor: 'transparent',
+        borderTopColor: theme.blue,
+        alignSelf: 'center',
+        // shadowColor: '#000',
+        // shadowOffset: { width: 0, height: 2 },
+        // shadowOpacity: 0.5,
+        }} />
+    </Animated.View>
   );
 };
+
+
+
 
 export default App;

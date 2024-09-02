@@ -67,14 +67,13 @@ export default AvisViewPrincipal = () => {
                     <Ionicons name="close" size={30} color="gray" />
                     </View>
                 </TouchableOpacity>
-                <View style={{paddingHorizontal : 20}}>
+                <View style={{paddingHorizontal : 20,marginBottom : 20}}>
                     <Text style={{fontFamily: "Inter-Black", fontSize : 22,color : theme.text}}>
                         Rédiger un avis
                     </Text>
                 </View>
-                <View style={{ marginHorizontal : 20, borderBottomColor: theme.light_gray, borderBottomWidth: 2, marginVertical: 15 }} />
 
-                <View style={{flexDirection:"column", justifyContent:"flex-start" ,alignItems : "flex-start",padding : 5,borderRadius : 5, marginHorizontal : 20, backgroundColor : theme.light_gray}}>
+                <View style={{marginBottom : 15,flexDirection:"column", justifyContent:"flex-start" ,alignItems : "flex-start",padding : 5,borderRadius : 5, marginHorizontal : 20, backgroundColor : theme.light_gray}}>
                     
                     
                     <Text style={{fontFamily : "Inter-Bold", fontSize : 15,color : theme.dark_gray}}>
@@ -91,7 +90,6 @@ export default AvisViewPrincipal = () => {
                     />
                 </View>
 
-                <View style={{ marginHorizontal : 20, borderBottomColor: theme.light_gray, borderBottomWidth: 2, marginVertical: 15 }} />
 
 
 
@@ -101,10 +99,10 @@ export default AvisViewPrincipal = () => {
                         navigation.navigate("NewAvisView",{EnvoieDirect : true})
                         // ToastNotif("Ajout d'un avis","check-circle",theme,"green",2000)
                         }}>
-                <View style={{ backgroundColor: theme.blue, marginHorizontal: 20, justifyContent: 'center', alignItems: 'center', borderRadius: 10 }}>
+                <View style={{ backgroundColor: theme.text, marginHorizontal: 20, justifyContent: 'center', alignItems: 'center', borderRadius: 10 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <FontAwesome name={"plus"} color={"white"} size={14} />
-                    <Text style={{ marginLeft: 5, fontFamily: 'Inter-Bold', fontSize: 13.5, color: theme.text, paddingVertical: 12 }}>Ajouter un plat</Text>
+                    <FontAwesome name={"plus"} color={theme.background} size={14} />
+                    <Text style={{ marginLeft: 5, fontFamily: 'Inter-Bold', fontSize: 13.5, color: theme.background, paddingVertical: 12 }}>Ajouter un plat</Text>
                     </View>
                 </View>
                 </TouchableOpacity>

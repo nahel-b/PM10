@@ -534,12 +534,32 @@ const NewAvisView = () => {
             </View>
 
             <TouchableOpacity activeOpacity={0.8}
-                    disabled={!(selectedPlat && prix != 0 && comment && comment.length>0)}
+                    // disabled={!(selectedPlat && prix != 0 && comment && comment.length>0)}
                     onPress={
                         ()=>
                             
                             {
-                                if(!EnvoieDirect && goBackScreenName)
+
+                                if(!selectedPlat)
+                                    {
+                                        ToastNotif("Sélectionne le plat", "times-circle", { button_background: theme.background, text: theme.red  }, theme.red, 3000);
+
+                                    }
+                                else if( prix == 0)
+                                    {
+                                        ToastNotif("Sélectionne le prix", "times-circle", { button_background: theme.background, text: theme.red  }, theme.red, 3000);
+                                    }
+                                else if( !comment || comment.length == 0)
+                                        {
+                                            ToastNotif("Ecris au moins un petit commentaire", "times-circle", { button_background: theme.background, text: theme.red  }, theme.red, 3000);
+                                        }
+
+                                else if( comment.length < 5)
+                                    {
+                                        ToastNotif("Ecris un commentaire plus long", "times-circle", { button_background: theme.background, text: theme.red }, theme.red, 3000);
+
+                                    }
+                                else if(!EnvoieDirect && goBackScreenName)
                                     {
                                         const datemtn = new Date();
                                 navigation.navigate(goBackScreenName,
@@ -559,7 +579,7 @@ const NewAvisView = () => {
                     }
             >
                 <View style={{
-                    backgroundColor: selectedPlat && prix != 0 && comment && comment.length>0 ? theme.text :  theme.light_gray,
+                    backgroundColor: selectedPlat && prix != 0 && comment && comment.length>5 ? theme.text :  theme.light_gray,
                     margin: 20,
                     justifyContent: "center",
                     alignItems: "center",
