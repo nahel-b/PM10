@@ -11,12 +11,9 @@ import { getAllRestaurants,getAllTypeRestaurants } from './App/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Principal = ({ navigation }) => {
-  const [isConnected, setIsConnected] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-  const [isBackendConnected, setIsBackendConnected] = useState(true);
+  const [isBackendConnected, setIsBackendConnected] = useState(true); // Par défaut à false pour initialement vérifier la connexion
+  const [attente, setAttente] = useState(0);
   const { theme, changeTheme } = useTheme();
-  const { restaurants, setRestaurants, setTypeRestaurants } = useRestaurant();
-
 
   const loadTheme = async () => {
     const themeName = await AsyncStorage.getItem("themeName");
@@ -26,107 +23,75 @@ const Principal = ({ navigation }) => {
     }
   };
 
-  const loadAllRestaurants = async () => {
-    try {
-      await loadTheme();
-      ToastNotif("Récupération des restaurants...", "loading-cricle", { button_background: theme.background, text: theme.text }, theme.text, 10000, "bottom", true);
-      
-      const restaurants = await getAllRestaurants();
-      setRestaurants(restaurants); 
-      const typeRestaurants = await getAllTypeRestaurants();
-      setTypeRestaurants(typeRestaurants);
-      ToastHide(); 
-      setIsBackendConnected(true);
-
-    } catch (error) {
-      console.error('Erreur lors de la récupération des restaurants:', error);
-      ToastNotif("Erreur lors de la récupération des restaurants", "times-circle", { button_background: "red", text: "white" }, "white", 3000);
-      //setIsBackendConnected(false);
-    }
-  };
-
-  const checkAuthentication = async () => {
-    await loadTheme();
-    loadAllRestaurants();
-
-    const token = await AsyncStorage.getItem('authToken'); 
-    if (token) {
-      try {
-        const response = await fetch(`${API_URL}/checktoken`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-        const data = await response.json();
-        if (data === "true") {
-          setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
-        }
-      } catch (error) {
-        console.error("Erreur lors de la vérification du token:", error);
-        setIsBackendConnected(false);
-        setIsAuthenticated(false);
-      }
-    } else {
-      setIsAuthenticated(false);
-    }
-  };
-
   useEffect(() => {
-    
+    loadTheme();
+    const interval = setInterval(() => {
+      checkBackendConnection(interval); // Passe l'intervalle pour pouvoir l'arrêter
+      setAttente(prevAttente => prevAttente + 1);
+    }, 1000);
 
-    const unsubscribe = NetInfo.addEventListener(state => {
-      setIsConnected(state.isConnected);
-    });
-
-    
-
-    checkAuthentication();
-
-    return () => {
-      unsubscribe(); 
-    };
+    return () => clearInterval(interval); // Cleanup on unmount
   }, []);
 
-  const handleRetry = () => {
-    const unsubscribe = NetInfo.addEventListener(state => {
-      console.log('Connection type', state.isConnected);
-      // setIsConnected(state.isConnected);
+  const checkBackendConnection = async (interval) => {
+    console.log('Checking backend connection...');
+    try {
+      const response = await fetch(`${API_URL}/status`);
+      const data = await response.json();
 
-      //TODO
-      setIsConnected(true);
-    });
-    unsubscribe();
-    checkAuthentication();
+      if (data.ok) {
+        setIsBackendConnected(true);
+        clearInterval(interval); // Arrête l'intervalle si connecté
+      } else {
+        setIsBackendConnected(false);
+      }
+    } catch (error) {
+      setIsBackendConnected(false);
+    }
   };
-
-  if (!isConnected) {
-    return (
-      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.background }}>
-        <Text style={{ color: theme.text, fontSize: 18 }}>Pas de connexion Internet.</Text>
-        <Button title="Réessayer" onPress={handleRetry} />
-      </SafeAreaView>
-    );
-  }
 
   if (!isBackendConnected) {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.background }}>
-        <Text style={{ color: theme.text, fontSize: 18 }}>Impossible de se connecter au serveur.</Text>
-        <Button title="Réessayer" onPress={handleRetry} />
+        <Text adjustsFontSizeToFit numberOfLines={1} style={{ color: theme.text, fontSize: 18, textAlign: 'center', fontFamily: 'Inter-Bold', marginHorizontal: 20 }}>
+          Le Backend charge, faut attendre un peu...
+        </Text>
+        {attente > 5 && (
+          <Text style={{ marginTop: 20, color: theme.dark_gray, textAlign: 'center', fontFamily: 'Inter-Medium', marginHorizontal: 30 }}>
+            Je suis pauvre dcp le serveur est gratuit il mets du temps à démarrer
+          </Text>
+        )}
+        <Text style={{ color: theme.blue, marginTop: 30, fontSize: 20, textAlign: 'center', fontFamily: 'Inter-Bold' }}>
+          {attente}s
+        </Text>
+
+        {[
+          "Ca prends des fois 50s",
+          "C'est long",
+          "Je te fais patienter",
+          "La patience est la clef du succes",
+          "Je mets des phrases au hasard sur mon ecran",
+          "Tu penses aux autres tous les jours mais est ce que tu penses a toi ?",
+          "Ca fait 40s courage tu y es presque",
+          "Sinon tu peux m'acheter un server stv",
+          "Sur une échelle de 1 à 10 quelle est ton type de meuf ???"
+        ].map((txt, index) => (
+          attente > (index * 5) + 10 && (
+            <Text key={index} style={{ marginTop: 15, color: theme.gray, textAlign: 'center', fontFamily: 'Inter-Medium', marginHorizontal: 30 }}>
+              {txt}
+            </Text>
+          )
+        ))}
       </SafeAreaView>
     );
   }
 
   return (
     <View style={{ flex: 1 }}>
-      <AppNavigator isAuthenticated={isAuthenticated} />
+      <AppNavigator isAuthenticated={true} />
     </View>
   );
-}
+};
 
 export default function App() {
   return (
