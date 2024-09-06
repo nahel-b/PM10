@@ -15,7 +15,8 @@ import 'react-native-reanimated';
 
 const Stack = createStackNavigator();
 
-export default function AppNavigator({ isAuthenticated }) {
+
+export default function AppNavigator({  }) {
   return (
     <NavigationContainer independent={true}>
       <Stack.Navigator
@@ -23,17 +24,7 @@ export default function AppNavigator({ isAuthenticated }) {
           headerShown: false,
         }}
       >
-        {isAuthenticated ? (
-          <>
-
-            <Stack.Screen
-            name="AdminView"
-            component={AdminView}
-            options={{
-              ...TransitionPresets.ModalPresentationIOS, // Applique l'effet modal
-             
-            }}
-          />
+            
           <Stack.Screen
               name="MapView" 
               component={MapView} 
@@ -72,10 +63,17 @@ export default function AppNavigator({ isAuthenticated }) {
               }}
             />
 
-          </>
-        ) : (
+            <Stack.Screen
+            name="AdminView"
+            component={AdminView}
+            options={{
+              ...TransitionPresets.ModalPresentationIOS, // Applique l'effet modal
+             
+            }}
+          />
+        
           <Stack.Screen name="Auth" component={AuthScreen} />
-        )}
+        
       </Stack.Navigator>
     </NavigationContainer>
   );

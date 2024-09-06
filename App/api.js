@@ -2,7 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {API_URL} from './config/Config';
 
-const fetchWithToken = async (url, options = {}) => {
+
+const fetchWithToken = async (url, options = {},navigation) => {
     try {
         // Récupérer le token depuis AsyncStorage
         const token = await AsyncStorage.getItem('authToken');
@@ -26,6 +27,12 @@ const fetchWithToken = async (url, options = {}) => {
             console.log('New token:', tokenPart);
         }
 
+        //check erreur 401 
+        // if (response.status === 200) {
+        //     console.log('Unauthorized access - redirecting to authScreen');
+        //     navigation.navigate('authScreen');
+        //     return null;  
+        // }
         if (!response.ok) {
             console.error('Fetch with token failed:', response);
             console.log(response)
@@ -59,7 +66,7 @@ const addRestaurant = async (restaurantData) => {
 };
 
 // Fonction pour récupérer les restaurants autour d'un centre donné
-const getNearbyRestaurants = async (lat, lon, distance) => {
+const getNearbyRestaurants = async (navigation,lat, lon, distance) => {
     const url = `${API_URL}/restaurants/around?lat=${lat}&lon=${lon}&distance=${distance}`;  // L'URL de l'API pour récupérer les restaurants
 
     try {
@@ -72,7 +79,7 @@ const getNearbyRestaurants = async (lat, lon, distance) => {
 };
 
 // Fonction pour récupérer tous les restaurants
-const getAllRestaurants = async () => {
+const getAllRestaurants = async (navigation) => {
     const url = `${API_URL}/restaurants/all`; 
 
     try {
@@ -84,7 +91,7 @@ const getAllRestaurants = async () => {
     }
 };
 
-const getAllTypeRestaurants = async () => {
+const getAllTypeRestaurants = async (navigation) => {
     const url = `${API_URL}/typerestaurants/all`; 
 
     try {

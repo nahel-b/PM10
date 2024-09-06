@@ -149,7 +149,7 @@ const App = () => {
     const [mapKey, setMapKey] = useState('map1');
     const [mapType, setMapType] = useState('standard');
 
-    const [addingNewRestaurant, setAddingNewRestaurant] = useState(true);
+    const [addingNewRestaurant, setAddingNewRestaurant] = useState(false);
     const [replacingNewRestaurant,setReplacingNewRestaurant] = useState(false)
 
     const insets = useSafeAreaInsets();

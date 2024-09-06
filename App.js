@@ -14,12 +14,31 @@ const Principal = ({ navigation }) => {
   const [isBackendConnected, setIsBackendConnected] = useState(true); // Par défaut à false pour initialement vérifier la connexion
   const [attente, setAttente] = useState(0);
   const { theme, changeTheme } = useTheme();
+  const { restaurants, setRestaurants, setTypeRestaurants } = useRestaurant();
 
   const loadTheme = async () => {
     const themeName = await AsyncStorage.getItem("themeName");
     if (themeName) {
       changeTheme(themeName);
       console.log(themeName);
+    }
+  };
+
+  const loadAllRestaurants = async () => {
+    try {
+      ToastNotif("Récupération des restaurants...", "loading-cricle", { button_background: theme.background, text: theme.text }, theme.text, 10000, "bottom", true);
+      
+      const restaurants = await getAllRestaurants(navigation);
+      setRestaurants(restaurants); 
+      const typeRestaurants = await getAllTypeRestaurants();
+      setTypeRestaurants(typeRestaurants);
+      ToastHide(); 
+      setIsBackendConnected(true);
+
+    } catch (error) {
+      console.error('Erreur lors de la récupération des restaurants:', error);
+      ToastNotif("Erreur lors de la récupération des restaurants", "times-circle", { button_background: "red", text: "white" }, "white", 3000);
+      //setIsBackendConnected(false);
     }
   };
 
@@ -41,6 +60,7 @@ const Principal = ({ navigation }) => {
 
       if (data.ok) {
         setIsBackendConnected(true);
+        loadAllRestaurants()
         clearInterval(interval); // Arrête l'intervalle si connecté
       } else {
         setIsBackendConnected(false);
@@ -88,7 +108,7 @@ const Principal = ({ navigation }) => {
 
   return (
     <View style={{ flex: 1 }}>
-      <AppNavigator isAuthenticated={true} />
+      <AppNavigator />
     </View>
   );
 };
