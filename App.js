@@ -1,82 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useContext } from 'react';
 import { Alert, View, Text, Button } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeProvider, useTheme } from './App/context/ThemeContext';
 import { RestaurantProvider, useRestaurant } from './App/context/RestaurantsContext';
+import { AuthProvider,AuthContext } from './App/context/AuthProvider';
+import { BackendProvider, BackendContext, } from './App/context/BackendProvider';
 import AppNavigator from './App/AppNavigator';
 import { API_URL } from './App/config/Config';
 import { ToastNotif, ToastObj, ToastHide } from './App/Utils';
-import { getAllRestaurants,getAllTypeRestaurants } from './App/api';
+import { getAllRestaurants,getAllTypeRestaurants } from './App/Api';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AuthScreen from './App/AuthScreen';
 
-const Principal = ({ navigation }) => {
-  const [isBackendConnected, setIsBackendConnected] = useState(true); // Par défaut à false pour initialement vérifier la connexion
+const WaitBackendScreen = () => {
   const [attente, setAttente] = useState(0);
-  const { theme, changeTheme } = useTheme();
-  const { restaurants, setRestaurants, setTypeRestaurants } = useRestaurant();
 
-  const loadTheme = async () => {
-    const themeName = await AsyncStorage.getItem("themeName");
-    if (themeName) {
-      changeTheme(themeName);
-      console.log(themeName);
-    }
-  };
-
-  const loadAllRestaurants = async () => {
-    try {
-      ToastNotif("Récupération des restaurants...", "loading-cricle", { button_background: theme.background, text: theme.text }, theme.text, 10000, "bottom", true);
-      
-      const restaurants = await getAllRestaurants(navigation);
-      setRestaurants(restaurants); 
-      const typeRestaurants = await getAllTypeRestaurants();
-      setTypeRestaurants(typeRestaurants);
-      ToastHide(); 
-      setIsBackendConnected(true);
-
-    } catch (error) {
-      console.error('Erreur lors de la récupération des restaurants:', error);
-      ToastNotif("Erreur lors de la récupération des restaurants", "times-circle", { button_background: "red", text: "white" }, "white", 3000);
-      //setIsBackendConnected(false);
-    }
-  };
+  const { theme } = useTheme();
 
   useEffect(() => {
-    loadTheme();
-    const interval = setInterval(() => {
-      checkBackendConnection(interval); // Passe l'intervalle pour pouvoir l'arrêter
-      setAttente(prevAttente => prevAttente + 1);
+    const timer = setInterval(() => {
+      setAttente((prev) => prev + 1);
     }, 1000);
 
-    return () => clearInterval(interval); // Cleanup on unmount
-  }, []);
+    return () => {
+      clearInterval(timer);
+    };
+  }
+  ,[]);
 
-  const checkBackendConnection = async (interval) => {
-    console.log('Checking backend connection...');
-    try {
-      const response = await fetch(`${API_URL}/status`);
-      const data = await response.json();
 
-      if (data.ok) {
-        setIsBackendConnected(true);
-        loadAllRestaurants()
-        clearInterval(interval); // Arrête l'intervalle si connecté
-      } else {
-        setIsBackendConnected(false);
-      }
-    } catch (error) {
-      setIsBackendConnected(false);
-    }
-  };
 
-  if (!isBackendConnected) {
-    return (
-      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.background }}>
+  return (
+    <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.background }}>
         <Text adjustsFontSizeToFit numberOfLines={1} style={{ color: theme.text, fontSize: 18, textAlign: 'center', fontFamily: 'Inter-Bold', marginHorizontal: 20 }}>
           Le Backend charge, faut attendre un peu...
         </Text>
-        {attente > 5 && (
+        {attente >= 5 && (
           <Text style={{ marginTop: 20, color: theme.dark_gray, textAlign: 'center', fontFamily: 'Inter-Medium', marginHorizontal: 30 }}>
             Je suis pauvre dcp le serveur est gratuit il mets du temps à démarrer
           </Text>
@@ -94,16 +54,38 @@ const Principal = ({ navigation }) => {
           "Tu penses aux autres tous les jours mais est ce que tu penses a toi ?",
           "Ca fait 40s courage tu y es presque",
           "Sinon tu peux m'acheter un server stv",
-          "Sur une échelle de 1 à 10 quelle est ton type de meuf ???"
+          "Sur une échelle de 1 à 10 quelle est ton type de meuf ???",
+          "J'ai plus d'inspi juste attends"
         ].map((txt, index) => (
-          attente > (index * 5) + 10 && (
+          attente >= (index * 5) + 10 && (
             <Text key={index} style={{ marginTop: 15, color: theme.gray, textAlign: 'center', fontFamily: 'Inter-Medium', marginHorizontal: 30 }}>
               {txt}
             </Text>
           )
         ))}
       </SafeAreaView>
+  )
+};
+
+const Principal = ({ }) => {
+
+
+  const { isAuthenticated } = useContext(AuthContext);
+  const { isBackendConnected,isfirstCheck } = useContext(BackendContext);
+  
+  
+
+
+  if (!isBackendConnected && !isfirstCheck) {
+    return (
+      <WaitBackendScreen />
     );
+  }
+
+  if(!isAuthenticated){
+    return(
+      <AuthScreen/>
+    )
   }
 
   return (
@@ -117,8 +99,12 @@ export default function App() {
   return (
     <ThemeProvider>
       <RestaurantProvider>
-        <Principal />
-        <ToastObj /> 
+        <BackendProvider>
+          <AuthProvider>
+            <Principal />
+            <ToastObj /> 
+          </AuthProvider>
+        </BackendProvider>
       </RestaurantProvider>
     </ThemeProvider>
   );

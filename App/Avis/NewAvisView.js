@@ -7,7 +7,7 @@ import { useTheme } from '../context/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation,useRoute } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
-
+import {useRestaurant} from '../context/RestaurantsContext';
 import Slider from '@react-native-community/slider';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
@@ -30,7 +30,9 @@ const NewAvisView = () => {
     const [isSliderActive, setIsSliderActive] = useState(false);
     const [isCurrentDate, setIsCurrentDate] = useState(true);
 
-    const platsPredefinis = ['🍕 Pizza', '🍝 Pasta', '🥗 Salad', '🍔 Burger', '🍣 Sushi'];
+    const {dish} = useRestaurant();
+
+    // const platsPredefinis = ['🍕 Pizza', '🍝 Pasta', '🥗 Salad', '🍔 Burger', '🍣 Sushi'];
 
     const refInput = useRef(null);
     const refAvisInput = useRef(null);
@@ -38,165 +40,14 @@ const NewAvisView = () => {
     const [date, setDate] = useState(null);
     const [comment,setComment] = useState('');
 
-    const platsGlobal = [
-        '🍕 Pizza',
-        '🍝 Pasta',
-        '🥗 Salad',
-        '🍔 Burger',
-        '🍣 Sushi',
-        '🍛 Curry',
-        '🍜 Ramen',
-        '🌮 Tacos',
-        '🥩 Steak',
-        '🍤 Shrimp',
-        '🥙 Kebab',
-        '🍲 Hotpot',
-        '🍱 Bento',
-        '🥖 Baguette',
-        '🍞 Bread',
-        '🥪 Sandwich',
-        '🍰 Cake',
-        '🍪 Cookies',
-        '🥧 Pie',
-        '🍮 Flan',
-        '🍫 Chocolate',
-        '🍬 Candy',
-        '🍿 Popcorn',
-        '🥐 Croissant',
-        '🍩 Donut',
-        '🥓 Bacon',
-        '🥞 Pancakes',
-        '🧇 Waffles',
-        '🍠 Sweet Potato',
-        '🍳 Eggs',
-        '🍟 Fries',
-        '🌭 Hot Dog',
-        '🍖 Ribs',
-        '🍗 Fried Chicken',
-        '🥥 Coconut',
-        '🍍 Pineapple',
-        '🍉 Watermelon',
-        '🍇 Grapes',
-        '🍒 Cherries',
-        '🍓 Strawberries',
-        '🍋 Lemon',
-        '🍌 Banana',
-        '🍎 Apple',
-        '🍏 Green Apple',
-        '🍊 Orange',
-        '🍐 Pear',
-        '🍑 Peach',
-        '🍈 Melon',
-        '🥝 Kiwi',
-        '🍅 Tomato',
-        '🌽 Corn',
-        '🥒 Cucumber',
-        '🥕 Carrot',
-        '🥦 Broccoli',
-        '🥬 Lettuce',
-        '🥔 Potato',
-        '🍆 Eggplant',
-        '🍄 Mushrooms',
-        '🌶️ Pepper',
-        '🧄 Garlic',
-        '🧅 Onion',
-        '🍚 Rice',
-        '🍘 Rice Cracker',
-        '🍢 Oden',
-        '🍡 Dango',
-        '🍧 Shaved Ice',
-        '🍨 Ice Cream',
-        '🍦 Soft Serve',
-        '🍹 Cocktail',
-        '🍸 Martini',
-        '🍷 Wine',
-        '🍺 Beer',
-        '🥂 Champagne',
-        '☕ Coffee',
-        '🍵 Tea',
-        '🥤 Soda',
-        '🍶 Sake',
-        '🧃 Juice',
-        '🥛 Milk',
-        '🍯 Honey',
-        '🧈 Butter',
-        '🥣 Cereal',
-        '🧀 Cheese',
-        '🍖 Ham',
-        '🥩 Beef',
-        '🍗 Chicken',
-        '🍖 Pork',
-        '🍤 Prawns',
-        '🐟 Fish',
-        '🐠 Salmon',
-        '🦐 Shrimp',
-        '🦑 Squid',
-        '🦀 Crab',
-        '🦞 Lobster',
-        '🍞 Toast',
-        '🥥 Coconut Water',
-        '🍉 Melon Juice',
-        '🍇 Grape Juice',
-        '🍒 Cherry Juice',
-        '🍓 Strawberry Shake',
-        '🍋 Lemonade',
-        '🍌 Banana Smoothie',
-        '🍎 Apple Pie',
-        '🍏 Green Apple Tart',
-        '🍊 Orange Sorbet',
-        '🍐 Pear Tart',
-        '🍑 Peach Cobbler',
-        '🥭 Mango',
-        '🍈 Melon Balls',
-        '🥝 Kiwi Slice',
-        '🍅 Tomato Soup',
-        '🌽 Corn on the Cob',
-        '🥒 Pickles',
-        '🥕 Carrot Cake',
-        '🥦 Broccoli Cheese',
-        '🥬 Lettuce Wrap',
-        '🥔 Mashed Potatoes',
-        '🍆 Eggplant Parmesan',
-        '🍄 Mushroom Risotto',
-        '🌶️ Spicy Chili',
-        '🧄 Garlic Bread',
-        '🧅 Onion Rings',
-        '🍚 Fried Rice',
-        '🍘 Seaweed Snack',
-        '🍢 Skewers',
-        '🍡 Mochi',
-        '🍧 Gelato',
-        '🍨 Sundae',
-        '🍦 Cone Ice Cream',
-        '🍹 Mojito',
-        '🍸 Cosmopolitan',
-        '🍷 Red Wine',
-        '🍺 Lager',
-        '🥂 Prosecco',
-        '☕ Espresso',
-        '🍵 Matcha',
-        '🥤 Lemon Soda',
-        '🍶 Plum Wine',
-        '🧃 Orange Juice',
-        '🥛 Almond Milk',
-        '🍯 Maple Syrup',
-        '🧈 Margarine',
-        '🥣 Porridge',
-        '🧀 Brie Cheese',
-        '🍖 Sausage',
-        '🥩 Filet Mignon',
-        '🍗 Drumstick',
-        '🍖 Ribs',
-        '🍤 Lobster Roll',
-        '🐟 Tuna',
-        '🐠 Cod',
-        '🦐 Scampi',
-        '🦑 Calamari',
-        '🦀 King Crab',
-        '🦞 Crawfish',
-        '🍞 Pita Bread',
-        '🥥 Coconut Ice Cream'
-      ];
+
+    const platsGlobal = dish;
+
+    //TODO : A changer
+    const platsPredefinis = dish;
+    
+
+    
 
     const route = useRoute();
     const  {avisModifier} = route?.params || {};
@@ -220,9 +71,9 @@ const NewAvisView = () => {
         setSelectedPlat('');
 
             const filteredSuggestions = platsGlobal.filter((plat) =>
-            plat.toLowerCase().includes(text.toLowerCase())
+            plat.name.toLowerCase().includes(text.toLowerCase())
         );
-        if (text.length > 0 && !platsPredefinis.includes(text)) {
+        if (text.length > 0 && !platsPredefinis.map(plat => plat.name).includes(text)) {
             filteredSuggestions.push('Ajouter ce plat');
             setSuggestions(filteredSuggestions);
 
@@ -245,7 +96,7 @@ const NewAvisView = () => {
         else 
         {
             setSelectedPlat(suggestion);
-            setInputValue(suggestion.slice(2));
+            setInputValue(suggestion.name);
             // unfocus input
             refInput.current.blur();
             Haptics.notificationAsync(
@@ -318,23 +169,28 @@ const NewAvisView = () => {
             </View>
             
             {/* Input avec suggestions */}
-            <View style={{flexDirection : 'row', backgroundColor: selectedPlat == '' ? theme.light_gray : 'transparent', paddingVertical: 10, paddingHorizontal: 5, borderRadius: 5, marginTop: 30, marginHorizontal: 20 }}>
+            <TouchableOpacity activeOpacity={0.8} onPress={() => {
+                //donner le focus à l'input
+                refInput.current.focus();
+            }}>
+            <View style={{flexDirection : 'row', backgroundColor: selectedPlat == '' ? theme.light_gray : theme.background_green, paddingVertical: 10, paddingHorizontal: 5, borderRadius: 10, marginTop: 30, marginHorizontal: 20 }}>
                 
                
-                <Text style={{ fontFamily: "Inter-Bold", fontSize: 15, color: theme.dark_gray }}>
-                {selectedPlat && selectedPlat.length > 0 ? selectedPlat.slice(0, 2) : '🍴'}
+                <Text style={{marginLeft : 2, fontFamily: "Inter-Bold", fontSize: 15, color: theme.dark_gray }}>
+                {selectedPlat && selectedPlat.name && selectedPlat.name.length > 0 ? selectedPlat.emoji : '🍴'}
                 </Text>
 
                 <TextInput
                     placeholder='Plat (pasta,...)'
                     placeholderTextColor={theme.dark_gray}
-                    style={{fontSize:selectedPlat == '' ? 15 : 18, fontFamily: selectedPlat == '' ?  "Inter-SemiBold" : "Inter-Bold",color : selectedPlat == '' ? theme.text : theme.text, marginLeft: 0, marginTop: 3 }}
+                    style={{fontSize:selectedPlat == '' ? 15 : 18, fontFamily: selectedPlat == '' ?  "Inter-SemiBold" : "Inter-Bold",color : selectedPlat == '' ? theme.text : theme.green, marginLeft: 2, marginTop: 3 }}
                     value={inputValue}
                     onChangeText={handleInputChange}
                     ref={refInput}
                 />
                 
             </View>
+            </TouchableOpacity>
             {
                 selectedPlat === '' &&
             (
@@ -352,22 +208,14 @@ const NewAvisView = () => {
 
                 ((
                         suggestions.length == 1 && inputValue.length > 0 ? (
-                            <Text style={{ marginHorizontal: 22, color: theme.red, marginTop: 5,marginBottom : -2, fontFamily: "Inter-SemiBold" }}>
+                            <Text style={{ marginHorizontal: 22, color: theme.middle_red, marginTop: 5,marginBottom : -2, fontFamily: "Inter-SemiBold" }}>
                                 Ce plat n'existe pas dans l'appli, ameliore l'appli en l'ajoutant 😁
                             </Text>
                         ) : null
                     )
 
                 )
-                // (
-                //     inputValue.length > 0 ? (
-                        
-                //         <Text style={{ marginHorizontal: 20, color: theme.dark_gray, marginTop: 20, fontFamily: "Inter-SemiBold" }}>
-                //             Ce plat n'a jamais été ajouté
-                //         </Text>)
-                //         :
-                //         null
-                // )
+              
                 )
             }
             {
@@ -392,7 +240,7 @@ const NewAvisView = () => {
                             </>
                         ) : 
                         <Text style={{  color: theme.text,fontFamily : "Inter-Bold" }}>
-                            {item}
+                            {item.emoji} {item.name}
                         </Text>
                     }
                     
@@ -559,18 +407,20 @@ const NewAvisView = () => {
                                         ToastNotif("Ecris un commentaire plus long", "times-circle", { button_background: theme.background, text: theme.red }, theme.red, 3000);
 
                                     }
+                                    else if (comment.length > 200)
+                                        {
+                                            ToastNotif("Ton commentaire est trop long", "times-circle", { button_background: theme.background, text: theme.red }, theme.red, 3000);
+                                        }
                                 else if(!EnvoieDirect && goBackScreenName)
                                     {
                                         const datemtn = new Date();
                                 navigation.navigate(goBackScreenName,
                                     {newAvis : 
                                         {
-                                            emoji : selectedPlat.slice(0, 2),
-                                            dish : selectedPlat.slice(2),
+                                            dish : selectedPlat,
                                             comment : comment,
                                             price : prix,
-                                            date : date ? date.toDateString() : datemtn.toDateString(),
-                                            rating : 5
+                                            date_visite : date ? date.toDateString() : datemtn.toDateString(),
                                         }
                                     }
                                 )}
@@ -579,7 +429,7 @@ const NewAvisView = () => {
                     }
             >
                 <View style={{
-                    backgroundColor: selectedPlat && prix != 0 && comment && comment.length>5 ? theme.text :  theme.light_gray,
+                    backgroundColor: selectedPlat && prix != 0 && comment && comment.length <200 && comment.length>5 ? theme.text :  theme.light_gray,
                     margin: 20,
                     justifyContent: "center",
                     alignItems: "center",

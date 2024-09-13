@@ -4,6 +4,7 @@ import { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { PanGestureHandler, GestureHandlerRootView, State, TextInput } from 'react-native-gesture-handler';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import * as Haptics from 'expo-haptics';
 
 import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome from  '@expo/vector-icons/FontAwesome';
@@ -12,39 +13,24 @@ import { Rating } from 'react-native-ratings'; // Importer le composant Rating
 import { useTheme } from '../context/ThemeContext';
 
 
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation,useRoute } from '@react-navigation/native';
 
 
 import CustomModal from '../ModalMenue';
+import { SendRatingRestaurant } from '../Api';
 
 
 
 // import NewAvisView from './NewAvisView';
 
-const reviewsData = [
-    {
-      name: "Jean Dupont",
-      dish: "Boeuf Bourguignon",
-      price: 25,
-      comment: "Le boeuf était parfaitement cuit, tendre et savoureux. L'accompagnement de légumes était délicieux.",
-      rating: 4.5,
-      emoji: "🥩"
-    },
-    {
-        name: "Jean Dupont",
-        dish: "Boeuf Bourguignon",
-        price: 25,
-        comment: "Le boeuf était parfaitement cuit, tendre et savoureux. L'accompagnement de légumes était délicieux.",
-        rating: 4.5,
-        emoji: "🥩"
-      }
-]
-
 
 export default AvisViewPrincipal = () => {
     const { theme } = useTheme();
     const navigation = useNavigation();
-    
+    const route = useRoute();
+
+    const reviewsData = route.params.reviews || [];
+    const restaurant = route.params.restaurant || {};
     
     const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -56,7 +42,15 @@ export default AvisViewPrincipal = () => {
       setIsModalVisible(false);
     };
   
-    
+    const HandleFeedback = (rating) => 
+        {
+            console.log(rating)
+            Haptics.notificationAsync(
+                Haptics.NotificationFeedbackType.Success
+              )
+
+            SendRatingRestaurant(restaurant.id,rating)
+        }
 
 
 
@@ -84,7 +78,10 @@ export default AvisViewPrincipal = () => {
                     ratingBackgroundColor={theme.dark_gray}
                     startingValue={5}
                     imageSize={30}
-                    
+                    onFinishRating=
+                    {
+                        (rating) => HandleFeedback(rating)
+                    }
                     tintColor={theme.light_gray}
                     style={{ marginLeft: 0 }}
                     />
@@ -119,45 +116,59 @@ export default AvisViewPrincipal = () => {
                 <ScrollView style={{ paddingTop: 0, marginTop : 5 }}>
                     <View style={{ paddingHorizontal: 20 }}>
                     {reviewsData && reviewsData.map((review, index) => (
-                    <View key={index} style={{ marginBottom: 15, backgroundColor : theme.light_gray,padding : 5,paddingHorizontal : 8,borderRadius : 10 }}>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <View>
-                                    <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 15, color: theme.text }}>
-                                        {review.emoji} {review.dish}
-                                    </Text>
-                                </View>
-                                <View style={{ backgroundColor: theme.blue, padding: 2,paddingHorizontal : 4, borderRadius: 5, marginLeft: 3, alignItems: 'center' }}>
-                                    <Text style={{ color: "white", fontFamily: 'Inter-SemiBold', fontSize: 13 }}>
-                                        {review.price}€
-                                    </Text>
-                                </View>
-                            </View>
+                    <View key={index} style={{ marginBottom: 10, backgroundColor : theme.light_gray,padding : 5,paddingHorizontal : 8,borderRadius : 10 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <View style={{ flexDirection: 'row',marginBottom : 5,marginTop : 5, alignItems: 'center' }}>
                             <View>
-                                <TouchableOpacity onPress={openModal}>
-                                <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 11, color: 'gray', textDecorationLine: 'none' }}>
-                                    <Feather name="more-horizontal" size={25} color="gray" />
+                                {/* <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 15, color: theme.text }}>
+                                    {review.emoji} {review.dish}
+                                </Text> */}
+                                <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 15, color: theme.text }}>
+                                    {review.dish.emoji} {review.dish.name}
                                 </Text>
-                                </TouchableOpacity>
+                            </View>
+                            <View style={{ backgroundColor: theme.blue, padding: 2,paddingHorizontal : 4, borderRadius: 5, marginLeft: 3, alignItems: 'center' }}>
+                                <Text style={{ color: "white", fontFamily: 'Inter-SemiBold', fontSize: 13 }}>
+                                    {review.price}€
+                                </Text>
                             </View>
                         </View>
-
-
-                        <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: 'gray', marginVertical: 5 }}>
-                        {review.comment}
-                        </Text>
-                        
-                        {/* <Rating
-                        type='custom'
-                        ratingColor='#FFD700'
-                        ratingBackgroundColor='#D3D3D3'
-                        startingValue={review.rating}
-                        imageSize={15}
-                        readonly
-                        tintColor={theme.light_gray}
-                        style={{ alignSelf: 'flex-start' }}
-                        /> */}
+                        <View style={{marginTop : -10}}>
+                            {/* <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 11, color: 'gray', textDecorationLine: 'none' }}>
+                                {review.name}
+                            </Text> */}
+    
+    
+                            <TouchableOpacity onPress={() => openReviewMenueModal(review)}>
+                                <Feather name="more-horizontal" size={25} color="gray" />
+                            </TouchableOpacity>
+    
+                        </View>
                     </View>
+    
+    
+                    <Text style={{ fontFamily: 'Inter-Medium', fontSize: 14, color : theme.dark_gray, marginVertical: 5 }}>
+                      {review.comment}
+                    </Text>
+                    
+           <View style={{ flexDirection: 'row', alignItems: 'center',justifyContent:"flex-end" }}>
+    
+                    {/* <Rating
+                                type='custom'
+                                ratingColor={theme.yellow}
+                                ratingBackgroundColor={theme.gray}
+                                startingValue={review.rating}
+                                imageSize={20}
+                                readonly
+                                tintColor={theme.light_gray}
+                                style={{ alignSelf: 'flex-start' }}
+                                /> */}
+                    <Text style={{ fontFamily: 'Inter-Medium', fontSize: 12, color: 'gray', marginLeft: 5 }}>
+                        {review.date_visite}
+                    </Text>
+    
+                                </View>
+                  </View>
                     ))}
                     </View>
                 </ScrollView>

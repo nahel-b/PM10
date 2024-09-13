@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState,useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {API_URL} from './config/Config';
-
+import { AuthContext } from './context/AuthProvider';
 
 const AuthScreen = ({ navigation }) => {
 
@@ -18,6 +18,8 @@ const AuthScreen = ({ navigation }) => {
     const [message, setMessage] = useState('');
     const [isLogin, setIsLogin] = useState(true);
 
+    const {setIsAuthenticated} = useContext(AuthContext);
+
     const onChangeHandler = () => {
         setIsLogin(!isLogin);
         setMessage('');
@@ -25,7 +27,10 @@ const AuthScreen = ({ navigation }) => {
 
     const onLoggedIn = async (token) => { 
         await AsyncStorage.setItem('authToken', token);
-        navigation.navigate('MapView'); 
+        await AsyncStorage.setItem('username', username.toLocaleLowerCase());
+        // navigation.navigate('MapView'); 
+        console.log("oe")
+        setIsAuthenticated(true);
     }
 
     const onSubmitHandler = () => {

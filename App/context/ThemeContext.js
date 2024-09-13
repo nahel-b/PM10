@@ -9,7 +9,19 @@ export const ThemeProvider = ({ children }) => {
   const [themeName, setThemeName] = useState('light'); 
   const [theme,setTheme] = useState(Colors.light);
 
-  
+  const loadTheme = async () => {
+    const themeName = await AsyncStorage.getItem("themeName");
+    if (themeName) {
+      changeTheme(themeName);
+      console.log(themeName);
+    }
+  };
+
+  useEffect(() => {
+    loadTheme();
+  }
+  ,[]);
+
 
 
   const toggleTheme = () => {
@@ -23,6 +35,9 @@ export const ThemeProvider = ({ children }) => {
       setTheme((prevTheme) => (newTheme === "dark" ? Colors.dark : Colors.light));
       AsyncStorage.setItem("themeName",newTheme)
     }
+
+
+
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, themeName, changeTheme }}>
       {children}

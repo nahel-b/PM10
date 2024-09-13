@@ -17,7 +17,7 @@ import BouncyCheckbox from "react-native-bouncy-checkbox";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { Rating } from 'react-native-ratings';
 import { ToastNotif } from './Utils';
-
+import { addRestaurant } from './Api';
 
 function NewAvisView ({})  {
     const { theme, themeName } = useTheme();
@@ -33,8 +33,9 @@ function NewAvisView ({})  {
     const isFocused = useIsFocused();
     const route = useRoute();
     const  {currentMapRegion} = route.params || {};
+    const [latlong,setLatlong] = useState(null);
     const [avis,setAvis] = useState(null);
-
+    const [rating,setRating] = useState(null);
     const refInput = useRef(null);
     const refAvisInput = useRef(null);
 
@@ -49,10 +50,22 @@ function NewAvisView ({})  {
       setIsModalVisible(false);
     };
 
+    const HandleFeedback = (rating) => 
+        {
+            console.log(rating)
+            Haptics.notificationAsync(
+                Haptics.NotificationFeedbackType.Success
+              )
+            setRating(rating);
+        }
+
 
     useEffect(() => {
         setSuggestions(typeRestaurants)
-
+        if(currentMapRegion)
+            {
+                setLatlong(currentMapRegion)
+            }
     }, []);
 
     useEffect(() => {
@@ -110,11 +123,12 @@ function NewAvisView ({})  {
     const HandleSubmitName = (text) => 
         {
             Keyboard.dismiss();
-            setSelectedName(Text);
+            console.log("text",text.nativeEvent.text)
+            setSelectedName(text.nativeEvent.text);
         }
 
   
-
+        
 
 
 
@@ -258,6 +272,26 @@ function NewAvisView ({})  {
                 
             </View>
             </TouchableOpacity>  
+            <View style={{marginTop : 15, flexDirection:"column", justifyContent:"flex-start" ,alignItems : "flex-start",padding : 5,borderRadius : 5, marginHorizontal : 20, backgroundColor : theme.background}}>
+                    
+                    
+                    <Text style={{fontFamily : "Inter-Bold", fontSize : 15,color : theme.dark_gray}}>
+                     Note général du restaurant</Text>
+                <Rating
+                    type='custom'
+                    ratingColor={"#FFC300"}
+                    ratingBackgroundColor={theme.gray}
+                    startingValue={0}
+                    imageSize={30}
+                    fractions={0}
+                    onFinishRating=
+                    {
+                        (rating) => HandleFeedback(rating)
+                    }
+                    tintColor={theme.background}
+                    style={{ marginLeft: 0 }}
+                    />
+                </View>
 
 
             {/* <View style={{flexShrink : 2, flex : 1}}/> */}
@@ -273,16 +307,16 @@ function NewAvisView ({})  {
                 :
                 
                 (
-            <TouchableOpacity disabled={selectedName == '' || selectedRestaurant == ''} activeOpacity={0.8} onPress={()=>
+            <TouchableOpacity disabled={!rating || selectedName == '' || selectedRestaurant == ''} activeOpacity={0.8} onPress={()=>
                     {
                         navigation.navigate("NewAvisView",{envoieDirect : false,goBackScreenName : "NewRestaurantView"})
                         
                         // ToastNotif("Ajout d'un avis","check-circle",theme,"green",2000)
                         }}>
-                <View style={{marginTop : 20, backgroundColor: selectedName != '' && selectedRestaurant != '' ? theme.blue : theme.light_gray, marginHorizontal: 20, justifyContent: 'center', alignItems: 'center', borderRadius: 10 }}>
+                <View style={{marginTop : 20, backgroundColor: rating && selectedName != '' && selectedRestaurant != '' ? theme.blue : theme.light_gray, marginHorizontal: 20, justifyContent: 'center', alignItems: 'center', borderRadius: 10 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <FontAwesome name={"plus"} color={selectedName != '' && selectedRestaurant != '' ? theme.text : theme.gray} size={14} />
-                    <Text style={{ marginLeft: 5, fontFamily: 'Inter-Bold', fontSize: 13.5, color: selectedName != '' && selectedRestaurant != '' ? theme.text : theme.gray, paddingVertical: 12 }}>Ajouter un plat</Text>
+                    <FontAwesome name={"plus"} color={rating && selectedName != '' && selectedRestaurant != '' ? theme.text : theme.gray} size={14} />
+                    <Text style={{ marginLeft: 5, fontFamily: 'Inter-Bold', fontSize: 13.5, color: rating && selectedName != '' && selectedRestaurant != '' ? theme.text : theme.gray, paddingVertical: 12 }}>Ajouter un plat</Text>
                     </View>
                 </View>
             </TouchableOpacity>)
@@ -291,11 +325,40 @@ function NewAvisView ({})  {
             }
 
 
-            {avis && <TouchableOpacity disabled={selectedName == '' || selectedRestaurant == ''} activeOpacity={0.8} onPress={()=>
+            {avis && <TouchableOpacity disabled={!rating || selectedName == '' || selectedRestaurant == ''} activeOpacity={0.8} onPress={ async ()=>
                     {
-                        navigation.navigate("NewAvisView",{envoieDirect : false,goBackScreenName : "NewRestaurantView"})
-                        
+
+
+
+                        try{
+                        const res = await addRestaurant({title : selectedName, type : selectedRestaurant,coordinate : {latitude : latlong.latitude,longitude : latlong.longitude},rating : 0,review : avis,rating : rating});
+                        if(res.error)
+                            {
+                                ToastNotif("Erreur lors de l'ajout du restaurant", "times-circle", { button_background: "red", text: "white" }, "white", 3000);
+                                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+                            }
+                            else
+                            {
+                                ToastNotif("Restaurant ajouté avec succès", "check-circle", { button_background: "green", text: "white" }, "white", 3000);
+                                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                                navigation.goBack();
+                            }
+                        }
+                        catch(e)
+                        {
+                            ToastNotif("Erreur lors de l'ajout du restaurant", "times-circle", { button_background: theme.red, text: "white" }, "white", 3000);
+                            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+
+                        }
+
                         // ToastNotif("Ajout d'un avis","check-circle",theme,"green",2000)
+
+
+
+
+
+
+
                         }}>
                 <View style={{marginTop : 20, backgroundColor: selectedName != '' && selectedRestaurant != '' ? theme.blue : theme.light_gray, marginHorizontal: 20, justifyContent: 'center', alignItems: 'center', borderRadius: 10 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -330,12 +393,13 @@ const AvisComp = ({review,theme,openModal}) => {
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                 <View>
                                     <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 15, color: theme.text }}>
-                                        {review.emoji} {review.dish}
+                                        {review.dish.emoji} {review.dish.name}
                                     </Text>
                                 </View>
                                 <View style={{ backgroundColor: theme.blue, padding: 2,paddingHorizontal : 4, borderRadius: 5, marginLeft: 3, alignItems: 'center' }}>
                                     <Text style={{ color: "white", fontFamily: 'Inter-SemiBold', fontSize: 13 }}>
-                                        {review.price}€
+                                        {review.price}€ 
+                                        
                                     </Text>
                                 </View>
                             </View>

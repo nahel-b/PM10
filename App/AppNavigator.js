@@ -67,12 +67,12 @@ export default function AppNavigator({  }) {
             name="AdminView"
             component={AdminView}
             options={{
-              ...TransitionPresets.ModalPresentationIOS, // Applique l'effet modal
+              ...TransitionPresets.SlideFromRightIOS, // Applique l'effet modal
              
             }}
           />
         
-          <Stack.Screen name="Auth" component={AuthScreen} />
+          {/* <Stack.Screen name="Auth" component={AuthScreen} /> */}
         
       </Stack.Navigator>
     </NavigationContainer>

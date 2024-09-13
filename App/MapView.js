@@ -158,8 +158,8 @@ const App = () => {
   
     useEffect(() => {
       setMarkers(restaurants); // Mettre à jour les marqueurs quand les restaurants changent
-      console.log("Restaurants mis à jour");
       forceRerender();
+      //console.log(restaurants[0].coordinate.coordinates[0])
     }, [restaurants]);
   
     useEffect(() => {
@@ -242,10 +242,12 @@ const App = () => {
       setSelectedMarker(marker);
 
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+      
   
       mapRef.current.animateToRegion({
-        latitude: marker.coordinate.latitude - 0.0001,
-        longitude: marker.coordinate.longitude,
+        latitude: marker.coordinate.coordinates[1] - 0.0001,
+        longitude: marker.coordinate.coordinates[0],
         latitudeDelta: 0.001,
         longitudeDelta: 0.001,
       }, 1000);
@@ -283,9 +285,6 @@ const App = () => {
         setMapKey(prevKey => (prevKey === 'map1' ? 'map2' : 'map1'));
       };
 
-      const Input = ({  }) => {
-        return   <TextInput placeholderTextColor={theme.dark_gray} ref={searchInputRef} style={{color : theme.text,fontFamily : "Inter-Bold",marginLeft : 5}} placeholder='Recherche...' />
-        }
   
     const CustomCluster = ({ count }) => (
       <View style={{
@@ -332,6 +331,8 @@ const App = () => {
              ToastNotif("Veuillez vous déplacer sur la carte", "times-circle", { button_background: theme.background, text: theme.text }, theme.red, 3000);
             }
       };
+
+
   
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>
@@ -354,7 +355,7 @@ const App = () => {
             renderCluster={(cluster) => {
             const { id, geometry, properties } = cluster;
             const points = properties.point_count;
-  
+
             return (
               <Marker
                 key={`cluster-${id}`}
@@ -370,11 +371,15 @@ const App = () => {
             );
           }}
         >
-          {
-            markers.map((marker) => (
+          {markers && 
+            markers.map((marker) => {
+              
+              const image = images[marker.type] || images["default"];
+
+              return (
               <Marker
                 key={marker.id}
-                coordinate={marker.coordinate}
+                coordinate={{"latitude": marker.coordinate.coordinates[1], "longitude": marker.coordinate.coordinates[0]}}
                 onPress={() => handleMarkerPress(marker)}
                 zIndex={selectedMarker ? (selectedMarker.id == marker.id ? 3 : 2) : 2}
                 centerOffset={{ x: 0, y: -40 }}
@@ -389,7 +394,7 @@ const App = () => {
                   padding: 5, justifyContent: 'flex-start', alignItems: 'flex-start', backgroundColor: theme.background
                 }}>
                   <Image
-                    source={images[marker.image]}
+                    source={image}
                     style={{ width: 50, height: 50, top: -40, left : 5, position: "absolute" }}
                   />
   
@@ -403,7 +408,7 @@ const App = () => {
                     type='custom'
                     ratingColor={"#FFC300"}
                     ratingBackgroundColor={theme.light_gray}
-                    startingValue={marker.rating}
+                    startingValue={marker.ratingAverage}
                     imageSize={15}
                     readonly
                     tintColor={theme.background}
@@ -428,7 +433,7 @@ const App = () => {
                 }} />
                 </Animated.View>
               </Marker>
-            ))
+            )})
           }
         </MapView>
   
@@ -455,7 +460,7 @@ const App = () => {
                 shadowRadius: 3,
                 paddingVertical : 10, paddingHorizontal : 7,flex : 1,flexGrow : 2}}>
                 <Ionicons name="search" size={20} color={theme.dark_gray}/>
-                <Input />
+                <TextInput placeholderTextColor={theme.dark_gray} ref={searchInputRef} style={{color : theme.text,fontFamily : "Inter-Bold",marginLeft : 5}} placeholder='Recherche...' />
               
             </View>
 
@@ -498,7 +503,7 @@ const App = () => {
 
         <View style={{width : "95%",alignItems : "flex-end", justifyContent : "flex-end", marginTop : 5}} >
 
-        <TouchableOpacity activeOpacity={0.5} onPress={()=>{}}>
+        <TouchableOpacity activeOpacity={0.5} onPress={()=>{navigation.navigate("AdminView")}}>
               
               <View style={{backgroundColor : theme.background, padding : 10,borderRadius : 13,aspectRatio : 1,alignItems : "center"}}>
 
@@ -684,10 +689,12 @@ const App = () => {
   
 
 const images = {
-  maison: require('./assets/images/logo_maison.png'),
-  cafe: require('./assets/images/logo_cafe.png'),
-  tacos : require('./assets/images/logo_tacos.png'),
-  indien : require('./assets/images/logo_indien.png'),
+  // maison: require('./assets/images/logo_maison.png'),
+  // cafe: require('./assets/images/logo_cafe.png'),
+  // tacos : require('./assets/images/logo_tacos.png'),
+  "Restaurant indien" : require('./assets/images/logo_indien.png'),
+  "Restaurant de tacos" : require('./assets/images/logo_tacos.png'),
+  "default": require('./assets/images/logo_defaut.png'),
 };
 
 
@@ -695,7 +702,13 @@ const images = {
 
 
 const ModalMarker = ({ selectedMarker, closeModal, animatedHeight,setReplacingNewRestaurant }) => {
-    const image = images[selectedMarker.image];
+
+    // if images[selectedMarker.type] is not found, use the default image : images["default"]
+
+    const image = images[selectedMarker.type] || images["default"];
+
+
+    // const image = images[selectedMarker.image];
     const { theme } = useTheme();
 
     const insets = useSafeAreaInsets();
@@ -713,6 +726,7 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight,setReplacingNe
     const [isReviewMenueModalVisible, setIsReviewMenueModalVisible] = useState(false);
     const [isMenueModalVisible, setIsMenueModalVisible] = useState(false);
 
+    const [isPersonalReview, setIsPersonalReview] = useState(false);
     
     const openMenueModal = () => {
         setIsMenueModalVisible(true);
@@ -722,8 +736,19 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight,setReplacingNe
         setIsMenueModalVisible(false);
       };
 
-      const openReviewMenueModal = () => {
+      const openReviewMenueModal = async (review) => {
+
+        const username = await AsyncStorage.getItem("username");
+        if(review.username.toLocaleLowerCase() == username.toLocaleLowerCase()){
+          setIsPersonalReview(true);
+        }
+        else{
+          setIsPersonalReview(false);
+        }
         setIsReviewMenueModalVisible(true);
+
+
+        
         };
     const closeReviewMenueModal = () => {
         setIsReviewMenueModalVisible(false);
@@ -745,7 +770,7 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight,setReplacingNe
     };
 
     const backButtonStyle = useAnimatedStyle(() => {
-        return {
+        return { 
         opacity: backButtonOpacity.value,
         };
     });
@@ -774,30 +799,37 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight,setReplacingNe
     }
 
     useEffect(() => {
-        const groupedData = selectedMarker.reviews.reduce((acc, review) => {
-            if (!acc[review.dish]) {
-                acc[review.dish] = { reviews: [], prices: [] };
-            }
-            acc[review.dish].reviews.push(review);
-            acc[review.dish].prices.push(review.price);
-            return acc;
-        }, {});
-
-        const dishDataArray = Object.keys(groupedData).map(dish => {
-            const prices = groupedData[dish].prices;
-            const minPrice = Math.min(...prices);
-            const maxPrice = Math.max(...prices);
-            return {
-                dish,
-                emoji : selectedMarker.reviews.find(review => review.dish === dish).emoji,
-                nbAVis : groupedData[dish].reviews.length,
-                priceRange: minPrice === maxPrice ? `${minPrice}€` : `${minPrice}€-${maxPrice}€`,
-                reviews: groupedData[dish].reviews
-            };
-        });
-        console.log(dishDataArray);
-        setDishData(dishDataArray);
-    }, [selectedMarker]);
+      const groupedData = selectedMarker.reviews.reduce((acc, review) => {
+          const dishName = review.dish.name; // Utilisez le nom du plat ici
+          if (!acc[dishName]) {
+              acc[dishName] = { reviews: [], prices: [] };
+          }
+          acc[dishName].reviews.push(review);
+          acc[dishName].prices.push(review.price);
+          return acc;
+      }, {});
+  
+      const dishDataArray = Object.keys(groupedData).map(dishName => {
+          const prices = groupedData[dishName].prices;
+          const minPrice = Math.min(...prices);
+          const maxPrice = Math.max(...prices);
+          
+          // Trouvez le premier review pour obtenir d'autres infos sur le dish, comme l'emoji et l'id
+          const reviewForDish = groupedData[dishName].reviews[0];
+          const dish = reviewForDish.dish;
+  
+          return {
+              dish,  // Contient tout l'objet dish (id, emoji, name)
+              nbAvis: groupedData[dishName].reviews.length,
+              priceRange: minPrice === maxPrice ? `${minPrice}€` : `${minPrice}€-${maxPrice}€`,
+              reviews: groupedData[dishName].reviews
+          };
+      });
+  
+      setDishData(dishDataArray);
+      console.log("ddd",dishDataArray);
+  }, [selectedMarker]);
+  
 
 
     const handleReplaceResto = () => 
@@ -924,25 +956,25 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight,setReplacingNe
             <View style={{flexDirection : "row",alignItems:"center"}}>
             <Rating
               type='custom'
-              ratingColor={"#FFC300"}
+              ratingColor={theme.yellow}
               ratingBackgroundColor={theme.light_gray}
-              startingValue={selectedMarker.rating}
+              startingValue={selectedMarker.ratingAverage}
               imageSize={22}
               readonly
               tintColor={theme.background}
               style={{ marginLeft: 0 }} 
             />
             <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: theme.dark_gray }}>
-                12 avis
+                {selectedMarker.reviews.length} avis
             </Text>
             </View>
             <TouchableOpacity onPress={() => 
                 {
-                    navigation.navigate('AvisView'); 
+                    navigation.navigate('AvisView', {reviews : selectedMarker.reviews, restaurant : selectedMarker}); 
 
                 }}>
 
-             <View style={{alignItems : "center", backgroundColor : theme.light_gray,marginLeft: 10, padding : 4, flexDirection : "row", borderRadius : 7 }} >
+             <View style={{alignItems : "center", backgroundColor : theme.light_gray,marginLeft: 10,paddingHorizontal : 7, padding : 4, flexDirection : "row", borderRadius : 7 }} >
 
               <FontAwesome name="pencil" size={15} color={theme.dark_gray} style={{  }} />
                 <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 14, color: theme.dark_gray, marginLeft : 5 }}>
@@ -1013,7 +1045,7 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight,setReplacingNe
                     
                 }]}>
                 {selectedDish && <Text style={{ zIndex : 2, fontFamily: 'Inter-SemiBold', fontSize: 16, color: theme.text }}>
-                    {selectedDish.emoji} {selectedDish.dish}
+                    {selectedDish.dish.emoji} {selectedDish.dish.name}
                 </Text>}
                 </Animated.View>
             </TouchableOpacity>
@@ -1043,7 +1075,7 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight,setReplacingNe
                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                         <View>
                                             <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 15, color: theme.text }}>
-                                                {dishItem.emoji} {dishItem.dish}
+                                                {dishItem.dish.emoji} {dishItem.dish.name}
                                             </Text>
                                         </View>
                                         <View style={{ backgroundColor: theme.blue, padding: 2,paddingHorizontal : 4, borderRadius: 5, marginLeft: 3, alignItems: 'center' }}>
@@ -1054,7 +1086,7 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight,setReplacingNe
                                     </View>
                                     <View style={{flexDirection : "row",alignItems : "center"}}>
                                         <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 11, color: 'gray', textDecorationLine: 'none' }}>
-                                            {dishItem.nbAVis + " avis"}
+                                            {dishItem.nbAvis + " avis"}
                                         </Text>    
                                         <Ionicons name="chevron-forward" size={20} color="gray" />
                                     
@@ -1081,7 +1113,7 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight,setReplacingNe
             <View style={{ paddingHorizontal: 20,width : "50%",marginTop : 20 }}>
             
             {selectedMarker.reviews && selectedDish && selectedMarker.reviews.filter(review => review.dish == selectedDish.dish  ).map((review, index) => (
-              <View key={index} style={{ marginBottom: 15, backgroundColor : theme.light_gray,padding : 5,paddingHorizontal : 8,borderRadius : 10 }}>
+              <View key={index} style={{ marginBottom: 10, backgroundColor : theme.light_gray,padding : 5,paddingHorizontal : 8,borderRadius : 10 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                     <View style={{ flexDirection: 'row',marginBottom : 5,marginTop : 5, alignItems: 'center' }}>
                         <View>
@@ -1089,7 +1121,7 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight,setReplacingNe
                                 {review.emoji} {review.dish}
                             </Text> */}
                             <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 15, color: theme.text }}>
-                                {review.name}
+                                {review.username[0].toUpperCase() + review.username.slice(1)}
                             </Text>
                         </View>
                         <View style={{ backgroundColor: theme.blue, padding: 2,paddingHorizontal : 4, borderRadius: 5, marginLeft: 3, alignItems: 'center' }}>
@@ -1104,7 +1136,7 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight,setReplacingNe
                         </Text> */}
 
 
-                        <TouchableOpacity onPress={openReviewMenueModal}>
+                        <TouchableOpacity onPress={() => openReviewMenueModal(review)}>
                             <Feather name="more-horizontal" size={25} color="gray" />
                         </TouchableOpacity>
 
@@ -1112,7 +1144,7 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight,setReplacingNe
                 </View>
 
 
-                <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: 'gray', marginVertical: 5 }}>
+                <Text style={{ fontFamily: 'Inter-Medium', fontSize: 14, color : theme.dark_gray, marginVertical: 5 }}>
                   {review.comment}
                 </Text>
                 
@@ -1126,16 +1158,23 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight,setReplacingNe
                   tintColor={theme.light_gray}
                   style={{ alignSelf: 'flex-start' }}
                 /> */}
+       <View style={{ flexDirection: 'row', alignItems: 'center',justifyContent:"space-between" }}>
+
                 <Rating
                             type='custom'
-                            ratingColor='#E8D406'
-                            ratingBackgroundColor='#D3D3D3'
+                            ratingColor={theme.yellow}
+                            ratingBackgroundColor={theme.gray}
                             startingValue={review.rating}
                             imageSize={20}
                             readonly
                             tintColor={theme.light_gray}
                             style={{ alignSelf: 'flex-start' }}
                             />
+                <Text style={{ fontFamily: 'Inter-Medium', fontSize: 12, color: 'gray', marginLeft: 5 }}>
+                    {review.date_visite}
+                </Text>
+
+                            </View>
               </View>
             ))}
             </View>
@@ -1165,10 +1204,17 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight,setReplacingNe
                     title={"Signaler le commentaire"}
                     options={
                         [
-                            { label: "Les informations de ce commentaires ne sont plus valables", handle: () => console.log("Modifier") },
-                            { label: "Le commentaire n'est pas approprié",dangerous : true, handle: () => console.log("Supprimer") },
+                            { label: isPersonalReview ? "Modifer" : "Les informations de ce commentaires ne sont plus valables",
+                               handle: () => console.log("Modifier")
+                              //TODO
+                              },
+
+                              //TODO
+                            { label: isPersonalReview ? "Supprimer" : "Le commentaire n'est pas approprié",dangerous : true, handle: () => console.log("Supprimer") },
                         ]}
-                />      
+                />   
+
+                
 
 
 
