@@ -5,6 +5,7 @@ import * as Location from 'expo-location';
 import { PanGestureHandler, GestureHandlerRootView, State, TextInput } from 'react-native-gesture-handler';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome from  '@expo/vector-icons/FontAwesome';
@@ -12,12 +13,15 @@ import FontAwesome from  '@expo/vector-icons/FontAwesome';
 import { Rating } from 'react-native-ratings'; // Importer le composant Rating
 import { useTheme } from '../context/ThemeContext';
 
+import { useRestaurant } from '../context/RestaurantsContext';
 
 import { useNavigation,useRoute } from '@react-navigation/native';
 
 
 import CustomModal from '../ModalMenue';
-import { SendRatingRestaurant } from '../Api';
+import { SendRatingRestaurant,deleteReview } from '../Api';
+import Toast from 'react-native-toast-message';
+import { ToastNotif } from '../Utils';
 
 
 
@@ -28,13 +32,41 @@ export default AvisViewPrincipal = () => {
     const { theme } = useTheme();
     const navigation = useNavigation();
     const route = useRoute();
+    const { updateRestaurant,restaurants } = useRestaurant();
 
-    const reviewsData = route.params.reviews || [];
-    const restaurant = route.params.restaurant || {};
+    const idRestaurant = route.params.idRestaurant || [];
+    const [reviewsData, setReviewData] = useState(null);
+
+    const restaurant = restaurants.find(restaurant => restaurant.id == idRestaurant);
     
     const [isModalVisible, setIsModalVisible] = useState(false);
 
-    const openModal = () => {
+    const [avis, setAvis] = useState(null);
+
+    const [username, setUsername] = useState("username");
+
+    useEffect( () => {
+        AsyncStorage.getItem('username').then((value) => setUsername(value));
+       
+        setReviewData(restaurant.reviews.filter(review => review.username.toLocaleLowerCase() == username.toLocaleLowerCase()))
+
+    }, []);
+
+    useEffect(() => {
+        console.log("refresh")
+        setReviewData(restaurant.reviews.filter(review => review.username.toLocaleLowerCase() == username.toLocaleLowerCase()))
+    }, [username]);
+
+    useEffect(() => {
+
+            setReviewData(restaurant.reviews.filter(review => review.username.toLocaleLowerCase() == username.toLocaleLowerCase()))
+       
+    }, [restaurant]);
+
+
+
+    const openModal = (avis) => {
+        setAvis(avis);
       setIsModalVisible(true);
     };
   
@@ -42,14 +74,29 @@ export default AvisViewPrincipal = () => {
       setIsModalVisible(false);
     };
   
-    const HandleFeedback = (rating) => 
+    const HandleFeedback = async (rating) => 
         {
-            console.log(rating)
-            Haptics.notificationAsync(
-                Haptics.NotificationFeedbackType.Success
-              )
+            
+            try {
+            const res = await SendRatingRestaurant(restaurant.id,rating)
+                if(res.error)
+                    {
 
-            SendRatingRestaurant(restaurant.id,rating)
+                        throw res.error;
+                    }
+                ToastNotif("Note ajoutée avec succès", "check-circle", theme, theme.green, 2000);
+                Haptics.notificationAsync(
+                    Haptics.NotificationFeedbackType.Success
+                  )
+                  //console.log(res.newData)
+                updateRestaurant(restaurant.id,res.newData)
+            }
+            catch (e) {
+                ToastNotif("Erreur lors de l'ajout de la note", "times-circle", { button_background: "red", text: "white" }, "white", 3000);
+                Haptics.notificationAsync(
+                    Haptics.NotificationFeedbackType.Error
+                  )
+            }
         }
 
 
@@ -76,7 +123,12 @@ export default AvisViewPrincipal = () => {
                     type='custom'
                     ratingColor={"#FFC300"}
                     ratingBackgroundColor={theme.dark_gray}
-                    startingValue={5}
+                    startingValue={
+                       //dans la liste restaurant.ratings l'objet tq username == AsyncStorage.getItem("username")
+                          //on prend la note
+                            //sinon on met 0
+                        restaurant.ratings.find(rating => rating.username.toLocaleLowerCase() == username.toLocaleLowerCase())?.rating || 0
+                    }
                     imageSize={30}
                     onFinishRating=
                     {
@@ -93,7 +145,10 @@ export default AvisViewPrincipal = () => {
 
                 <TouchableOpacity activeOpacity={0.8} onPress={()=>
                     {
-                        navigation.navigate("NewAvisView",{EnvoieDirect : true})
+                        const rating = restaurant.ratings.find(rating => rating.username.toLocaleLowerCase() == username.toLocaleLowerCase())?.rating || -1;
+
+                        navigation.navigate("NewAvisView",{EnvoieDirect : true,restaurantId : restaurant.id,rating});
+
                         // ToastNotif("Ajout d'un avis","check-circle",theme,"green",2000)
                         }}>
                 <View style={{ backgroundColor: theme.text, marginHorizontal: 20, justifyContent: 'center', alignItems: 'center', borderRadius: 10 }}>
@@ -139,7 +194,7 @@ export default AvisViewPrincipal = () => {
                             </Text> */}
     
     
-                            <TouchableOpacity onPress={() => openReviewMenueModal(review)}>
+                            <TouchableOpacity onPress={() => openModal(review)}>
                                 <Feather name="more-horizontal" size={25} color="gray" />
                             </TouchableOpacity>
     
@@ -153,16 +208,6 @@ export default AvisViewPrincipal = () => {
                     
            <View style={{ flexDirection: 'row', alignItems: 'center',justifyContent:"flex-end" }}>
     
-                    {/* <Rating
-                                type='custom'
-                                ratingColor={theme.yellow}
-                                ratingBackgroundColor={theme.gray}
-                                startingValue={review.rating}
-                                imageSize={20}
-                                readonly
-                                tintColor={theme.light_gray}
-                                style={{ alignSelf: 'flex-start' }}
-                                /> */}
                     <Text style={{ fontFamily: 'Inter-Medium', fontSize: 12, color: 'gray', marginLeft: 5 }}>
                         {review.date_visite}
                     </Text>
@@ -173,7 +218,7 @@ export default AvisViewPrincipal = () => {
                     </View>
                 </ScrollView>
 
-                <CustomModal
+                {/* <CustomModal
                     visible={isModalVisible}
                     onClose={closeModal}
                     title={"Commentaire"}
@@ -182,7 +227,45 @@ export default AvisViewPrincipal = () => {
                             { label: "Modifier", handle: () => console.log("Modifier") },
                             { label: "Supprimer",dangerous : true, handle: () => console.log("Supprimer") },
                         ]}
-                />
+                /> */}
+
+                <CustomModal
+                    visible={isModalVisible}
+                    onClose={closeModal}
+                    title={"Commentaire"}
+                    options={
+                        [
+                            { label: "Modifier", handle: () => 
+                                {
+                                    const rating = restaurant.ratings.find(rating => rating.username.toLocaleLowerCase() == username.toLocaleLowerCase())?.rating || -1;
+
+                                    navigation.navigate("NewAvisView",{EnvoieDirect : true,avisModifier : avis,restaurantId : restaurant.id,rating});
+                             closeModal()} },
+                            { label: "Supprimer",dangerous : true, handle: async () => 
+                                {
+                                    try {
+                                        const res = await deleteReview(restaurant.id,avis.id)
+                                        if(res.error)
+                                            {
+                                                throw res.error;
+                                            }
+                                        ToastNotif("Avis supprimé avec succès", "check-circle", theme, "green", 2000);
+
+                                        Haptics.notificationAsync(
+                                            Haptics.NotificationFeedbackType.Success
+                                          )
+                                        console.log(res.newData)
+                                        updateRestaurant(restaurant.id,res.newData)
+                                    }
+                                    catch (e) {
+                                        ToastNotif("Erreur lors de la suppression de l'avis", "times-circle", { button_background: "red", text: "white" }, "white", 3000);
+                                        Haptics.notificationAsync(
+                                            Haptics.NotificationFeedbackType.Error
+                                          )
+                                    }
+                                    setAvis(null); closeModal()} },
+                        ]}
+                /> 
 
                     
 
@@ -191,38 +274,3 @@ export default AvisViewPrincipal = () => {
     )
 }
 
-
-
-// const Stack = createStackNavigator();
-
-// export default function AppNavigator({ isAuthenticated }) {
-//     return (
-//         <Stack.Navigator
-//           screenOptions={{
-//             headerShown: false,
-//             ...TransitionPresets.ScaleFromCenterAndroid, // Effet de transition modal
-//           }}
-//         >
-//           <Stack.Screen name="AvisViewPrincipal" component={AvisViewPrincipal} />
-//           <Stack.Screen
-//             name="NewAvisView"
-//             component={NewAvisView}
-//             options={{
-//               cardStyle: { backgroundColor: 'transparent' },
-//               cardOverlayEnabled: true,
-//               cardStyleInterpolator: ({ current: { progress } }) => ({
-//                 cardStyle: {
-//                   opacity: progress,
-//                 },
-//                 overlayStyle: {
-//                   opacity: progress.interpolate({
-//                     inputRange: [0, 1],
-//                     outputRange: [0, 0.5],
-//                   }),
-//                 },
-//               }),
-//             }}
-//           />
-//         </Stack.Navigator>
-//     );
-//   }

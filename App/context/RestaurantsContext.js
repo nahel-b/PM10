@@ -16,14 +16,22 @@ export const RestaurantProvider = ({ children }) => {
     setDish(dish);
   };
 
-
+  const updateRestaurant = (id, data) => {
+    const newRestaurants = restaurants.map((restaurant) => {
+      if (restaurant.id === id) {
+        return { ...restaurant, ...data };
+      }
+      return restaurant;
+    });
+    setRestaurants(newRestaurants);
+  }
 
   
   
 
 
   return (
-    <RestaurantContext.Provider value={{dish, restaurants, setRestaurants, typeRestaurants, refreshDataRestaurant }}>
+    <RestaurantContext.Provider value={{dish,updateRestaurant, restaurants, setRestaurants, typeRestaurants, refreshDataRestaurant }}>
       {children}
     </RestaurantContext.Provider>
   );

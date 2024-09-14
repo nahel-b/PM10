@@ -334,12 +334,12 @@ function NewAvisView ({})  {
                         const res = await addRestaurant({title : selectedName, type : selectedRestaurant,coordinate : {latitude : latlong.latitude,longitude : latlong.longitude},rating : 0,review : avis,rating : rating});
                         if(res.error)
                             {
-                                ToastNotif("Erreur lors de l'ajout du restaurant", "times-circle", { button_background: "red", text: "white" }, "white", 3000);
+                                ToastNotif("Erreur lors de l'ajout du restaurant", "times-circle", { background: theme.red, text: "white" }, "white", 3000);
                                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
                             }
                             else
                             {
-                                ToastNotif("Restaurant ajouté avec succès", "check-circle", { button_background: "green", text: "white" }, "white", 3000);
+                                ToastNotif("Restaurant ajouté avec succès", "check-circle", theme, theme.gree, 3000);
                                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
                                 navigation.goBack();
                             }

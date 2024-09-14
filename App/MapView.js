@@ -439,7 +439,7 @@ const App = () => {
   
         {!addingNewRestaurant && !replacingNewRestaurant && selectedMarker && (
           <ModalMarker
-            selectedMarker={selectedMarker}
+          selectedMarkerId={selectedMarker.id}
             closeModal={closeModal}
             animatedHeight={animatedHeight}
             setReplacingNewRestaurant={setReplacingNewRestaurant}
@@ -701,11 +701,16 @@ const images = {
 
 
 
-const ModalMarker = ({ selectedMarker, closeModal, animatedHeight,setReplacingNewRestaurant }) => {
+const ModalMarker = ({ selectedMarkerId, closeModal, animatedHeight,setReplacingNewRestaurant }) => {
 
     // if images[selectedMarker.type] is not found, use the default image : images["default"]
 
-    const image = images[selectedMarker.type] || images["default"];
+    const { restaurants } = useRestaurant();
+
+    let selectedMarker = restaurants.find((r) => r.id === selectedMarkerId);
+
+
+    const image = !selectedMarker ? images["default"] : images[selectedMarker.type] || images["default"];
 
 
     // const image = images[selectedMarker.image];
@@ -727,6 +732,14 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight,setReplacingNe
     const [isMenueModalVisible, setIsMenueModalVisible] = useState(false);
 
     const [isPersonalReview, setIsPersonalReview] = useState(false);
+
+    useEffect(() => {
+      console.log("selectedMarkerId",selectedMarkerId)
+    }, []);
+
+    useEffect(() => {
+      selectedMarker = restaurants.find((r) => r.id === selectedMarkerId);
+    }, [restaurants]);
     
     const openMenueModal = () => {
         setIsMenueModalVisible(true);
@@ -737,7 +750,7 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight,setReplacingNe
       };
 
       const openReviewMenueModal = async (review) => {
-
+        setAvis(review);
         const username = await AsyncStorage.getItem("username");
         if(review.username.toLocaleLowerCase() == username.toLocaleLowerCase()){
           setIsPersonalReview(true);
@@ -774,7 +787,7 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight,setReplacingNe
         opacity: backButtonOpacity.value,
         };
     });
-
+    const [avis, setAvis] = useState(null);
     
 
 
@@ -970,7 +983,7 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight,setReplacingNe
             </View>
             <TouchableOpacity onPress={() => 
                 {
-                    navigation.navigate('AvisView', {reviews : selectedMarker.reviews, restaurant : selectedMarker}); 
+                    navigation.navigate('AvisView', {idRestaurant : selectedMarker.id, restaurant : selectedMarker}); 
 
                 }}>
 
@@ -1205,11 +1218,16 @@ const ModalMarker = ({ selectedMarker, closeModal, animatedHeight,setReplacingNe
                     options={
                         [
                             { label: isPersonalReview ? "Modifer" : "Les informations de ce commentaires ne sont plus valables",
-                               handle: () => console.log("Modifier")
-                              //TODO
-                              },
+                               handle: async  () => {
+                                const username = await AsyncStorage.getItem("username");
 
-                              //TODO
+                                const rating = selectedMarker.ratings.find(rating => rating.username.toLocaleLowerCase() == username.toLocaleLowerCase())?.rating || -1;
+
+                                        navigation.navigate("NewAvisView",{EnvoieDirect : true,avisModifier : avis,restaurantId : selectedMarker.id,rating});
+                                        closeReviewMenueModal()
+                                } },
+                                
+
                             { label: isPersonalReview ? "Supprimer" : "Le commentaire n'est pas approprié",dangerous : true, handle: () => console.log("Supprimer") },
                         ]}
                 />   

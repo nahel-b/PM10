@@ -15,7 +15,7 @@ const toastConfig = {
 
   tomatoToast: ({ text1, props }) => (
     //TODO : ajuster avec l'encoche la safeview la margin
-    <View style={{margin : props.position == "bottom" ? 0 : 60,height: 40, backgroundColor: props.theme.button_background, justifyContent: "center", borderRadius: 20, 
+    <View style={{margin : props.position == "bottom" ? 0 : 60,height: 40, backgroundColor: props.theme.background, justifyContent: "center", borderRadius: 20, 
       paddingHorizontal: 10,
       marginHorizontal : 30,
 

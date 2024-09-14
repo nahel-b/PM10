@@ -35,14 +35,21 @@ const fetchWithToken = async (url, options = {},logout) => {
             return null;  
         }
         if (!response.ok) {
-            console.error('Fetch with token failed:', response);
-            console.log(response)
-            throw new Error('Network response was not ok');
+            //console.error('Fetch with token failed:', response);
+           // console.log(response)
+            const res = await response.json();
+            console.log(res)
+            if(res.message)
+                {
+                    throw new Error(response.message);
+                }
+            else{throw new Error('Network response was not ok');}
+            
         }
         const res = await response.json();
         return res
     } catch (error) {
-        console.error('Fetch with token failed:', error);
+        //console.error('Fetch with token failed:', error);
         throw error;
     }
 };
@@ -155,6 +162,21 @@ const addReviewToRestaurant = async (restaurantId, reviewData) => {
     }
 };
 
+const deleteReview = async (restaurantId, reviewId) => {
+    const url = `${API_URL}/restaurants/${restaurantId}/reviews/${reviewId}`;  // L'URL de l'API pour supprimer un avis
+
+    try {
+        const response = await fetchWithToken(url, {
+            method: 'DELETE',
+        });
+
+        return response;  // Retourne la réponse avec l'avis supprimé
+    } catch (error) {
+        console.error('Failed to delete review:', error);
+        throw error;
+    }
+};
+
   
 
 const deleteAccount = async (logout) => {
@@ -178,4 +200,4 @@ const deleteAccount = async (logout) => {
 
 
 
-export {fetchWithToken,getAllDish,addReviewToRestaurant, addRestaurant,deleteAccount,SendRatingRestaurant, getNearbyRestaurants, getAllRestaurants, getAllTypeRestaurants};
+export {fetchWithToken,getAllDish,deleteReview,addReviewToRestaurant, addRestaurant,deleteAccount,SendRatingRestaurant, getNearbyRestaurants, getAllRestaurants, getAllTypeRestaurants};

@@ -14,6 +14,8 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 import { ToastNotif } from '../Utils';
 import { Rating } from 'react-native-ratings';
+import { addReviewToRestaurant } from '../Api';
+import Toast from 'react-native-toast-message';
 
 
 const NewAvisView = () => {
@@ -30,7 +32,8 @@ const NewAvisView = () => {
     const [isSliderActive, setIsSliderActive] = useState(false);
     const [isCurrentDate, setIsCurrentDate] = useState(true);
 
-    const {dish} = useRestaurant();
+    const {dish,updateRestaurant} = useRestaurant();
+
 
     // const platsPredefinis = ['🍕 Pizza', '🍝 Pasta', '🥗 Salad', '🍔 Burger', '🍣 Sushi'];
 
@@ -54,15 +57,19 @@ const NewAvisView = () => {
     const {goBackScreenName} = route?.params || null;
     const {EnvoieDirect}= route.params || true;
 
+    const rating = route.params?.rating || null; 
+
+    const {restaurantId} = route.params || null;
+
     useEffect(() => {
         setSuggestions(platsPredefinis)
         if(avisModifier)
             {
-                setSelectedPlat(avisModifier.emoji + avisModifier.dish)
-                setInputValue(avisModifier.dish)
+                setSelectedPlat(avisModifier.dish)
+                setInputValue(avisModifier.dish.name)
                 setPrix(avisModifier.price)
                 setComment(avisModifier.comment)
-
+                
             }
     }, []);
 
@@ -384,7 +391,7 @@ const NewAvisView = () => {
             <TouchableOpacity activeOpacity={0.8}
                     // disabled={!(selectedPlat && prix != 0 && comment && comment.length>0)}
                     onPress={
-                        ()=>
+                        async ()=>
                             
                             {
 
@@ -417,13 +424,57 @@ const NewAvisView = () => {
                                 navigation.navigate(goBackScreenName,
                                     {newAvis : 
                                         {
-                                            dish : selectedPlat,
+                                            dish : 
+                                            {
+                                                name : selectedPlat.name,
+                                                emoji : selectedPlat.emoji,
+                                                id : selectedPlat.id
+                                            },
                                             comment : comment,
                                             price : prix,
                                             date_visite : date ? date.toDateString() : datemtn.toDateString(),
                                         }
                                     }
                                 )}
+                                else if(EnvoieDirect)
+                                    {
+                                        try{
+                                            console.log("rating : ",rating);
+                                        const res = await addReviewToRestaurant(restaurantId,
+                                            {
+                                                dish : 
+                                                {
+                                                    name : selectedPlat.name,
+                                                    emoji : selectedPlat.emoji,
+                                                    id : selectedPlat.id
+                                                },
+                                                rating ,
+                                                comment : comment,
+                                                price : prix,
+                                                date_visite : date ? date.toDateString() : new Date().toDateString(),
+                                            }
+
+                                        )
+                                        if(res.error)
+                                            {
+
+                                                throw res.error;
+                                            }
+                                           // console.log("Nouveau avis : ",res.newData);
+                                        updateRestaurant(restaurantId,res.newData)
+                                        ToastNotif("Avis envoyé", "check-circle", theme, "green", 2000);
+                                        
+                                        navigation.goBack();
+                                        }
+                                        catch(error)
+                                        {
+                                            //console.log("Erreur lors de l'envoie de l'avis : ",error);
+                                            ToastNotif("Erreur lors de l'envoie de l'avis", "times-circle", { button_background: theme.background, text: theme.red }, theme.red, 3000);
+                                        }
+                                    }
+                                    else{
+                                        console.log("Erreur");
+                                    }
 
                             }
                     }
