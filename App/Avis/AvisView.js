@@ -40,7 +40,7 @@ export default AvisViewPrincipal = () => {
     const restaurant = restaurants.find(restaurant => restaurant.id == idRestaurant);
     
     const [isModalVisible, setIsModalVisible] = useState(false);
-
+    const [ratingnote, setRating] = useState(0);
     const [avis, setAvis] = useState(null);
 
     const [username, setUsername] = useState("username");
@@ -49,12 +49,16 @@ export default AvisViewPrincipal = () => {
         AsyncStorage.getItem('username').then((value) => setUsername(value));
        
         setReviewData(restaurant.reviews.filter(review => review.username.toLocaleLowerCase() == username.toLocaleLowerCase()))
-
+        setRating(restaurant.ratings.find(rating => rating.username.toLocaleLowerCase() == username.toLocaleLowerCase())?.rating || 0)
+        console.log("note", restaurant.ratings.find(rating => rating.username.toLocaleLowerCase() == username.toLocaleLowerCase())?.rating || 0)
+        
     }, []);
 
     useEffect(() => {
         console.log("refresh")
         setReviewData(restaurant.reviews.filter(review => review.username.toLocaleLowerCase() == username.toLocaleLowerCase()))
+        setRating(restaurant.ratings.find(rating => rating.username.toLocaleLowerCase() == username.toLocaleLowerCase())?.rating || 0)
+
     }, [username]);
 
     useEffect(() => {
@@ -75,8 +79,15 @@ export default AvisViewPrincipal = () => {
     };
   
     const HandleFeedback = async (rating) => 
-        {
-            
+        {   
+            if(rating <= 0)
+                {
+                    ToastNotif("Veuillez noter au dessus de zéro", "times-circle", theme, theme.red, 3000);
+                    Haptics.notificationAsync(
+                        Haptics.NotificationFeedbackType.Error
+                      )
+                    return;
+                }
             try {
             const res = await SendRatingRestaurant(restaurant.id,rating)
                 if(res.error)
@@ -124,10 +135,7 @@ export default AvisViewPrincipal = () => {
                     ratingColor={"#FFC300"}
                     ratingBackgroundColor={theme.dark_gray}
                     startingValue={
-                       //dans la liste restaurant.ratings l'objet tq username == AsyncStorage.getItem("username")
-                          //on prend la note
-                            //sinon on met 0
-                        restaurant.ratings.find(rating => rating.username.toLocaleLowerCase() == username.toLocaleLowerCase())?.rating || 0
+                        ratingnote 
                     }
                     imageSize={30}
                     onFinishRating=
@@ -143,15 +151,19 @@ export default AvisViewPrincipal = () => {
 
 
 
-                <TouchableOpacity activeOpacity={0.8} onPress={()=>
+                <TouchableOpacity  activeOpacity={0.8} onPress={()=>
                     {
+                        if(ratingnote <=0){
+                            ToastNotif("Veuillez noter le restaurant avant", "times-circle", theme, theme.red, 3000);
+                            return;
+                        }
                         const rating = restaurant.ratings.find(rating => rating.username.toLocaleLowerCase() == username.toLocaleLowerCase())?.rating || -1;
 
                         navigation.navigate("NewAvisView",{EnvoieDirect : true,restaurantId : restaurant.id,rating});
 
                         // ToastNotif("Ajout d'un avis","check-circle",theme,"green",2000)
                         }}>
-                <View style={{ backgroundColor: theme.text, marginHorizontal: 20, justifyContent: 'center', alignItems: 'center', borderRadius: 10 }}>
+                <View style={{ backgroundColor: ratingnote <= 0 ? theme.light_gray :  theme.text, marginHorizontal: 20, justifyContent: 'center', alignItems: 'center', borderRadius: 10 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <FontAwesome name={"plus"} color={theme.background} size={14} />
                     <Text style={{ marginLeft: 5, fontFamily: 'Inter-Bold', fontSize: 13.5, color: theme.background, paddingVertical: 12 }}>Ajouter un plat</Text>
@@ -162,7 +174,7 @@ export default AvisViewPrincipal = () => {
 
                 <Text style={{marginHorizontal : 20, color : theme.dark_gray, marginTop : 20,fontFamily : "Inter-SemiBold"}}>
 
-                    Avis Déjà laissé : 
+                {reviewsData && reviewsData.length > 0 ? "Avis déjà laissé sur cette pépite :" : "Aucun avis laissé sur cette pépite :" }
 
                 </Text>
 

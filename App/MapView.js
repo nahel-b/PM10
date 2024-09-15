@@ -19,7 +19,7 @@ import { ToastObj, ToastNotif } from './Utils';
 import { Rating } from 'react-native-ratings'; // Importer le composant Rating
 import { useTheme } from './context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
-
+import {deleteReview} from './Api';
 
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -39,98 +39,6 @@ const DEFAULT_LOCATION = { latitude: 37.78825, longitude: -122.4324 };
 const STORAGE_KEY = "lastLocation"; 
 
 
-// definir input 
-
-
-
-const markersData = [
-  {
-    id: 1,
-    title: "Best Tacos",
-    description: "This is the description of Marker 1",
-    type :"restaurant de tacos",
-    coordinate: { latitude: 49.300, longitude: 2.641135858490601 },
-    image: "maison",
-    rating: 4.5,
-    reviews: [
-        {
-          name: "Jean Dupont",
-          dish: "Boeuf Bourguignon",
-          price: 25,
-          comment: "Le boeuf était parfaitement cuit, tendre et savoureux. L'accompagnement de légumes était délicieux.",
-          rating: 4.5,
-          emoji: "🥩"
-        },
-        {
-          name: "Marie Martin",
-          dish: "Coq au Vin",
-          price: 22,
-          comment: "Un plat classique, mais avec une touche moderne. Les saveurs étaient bien équilibrées.",
-          rating: 4,
-          emoji: "🌯"
-        },
-        {
-          name: "Pierre Lefèvre",
-          dish: "Tarte Tatin",
-          price: 8,
-          comment: "Dessert excellent, mais la pâte aurait pu être un peu plus croustillante.",
-          rating: 4.5,
-          emoji: "🥗"
-        },
-        {
-          name: "Sophie Durand",
-          dish: "Ratatouille",
-          price: 18,
-          comment: "Délicieuse ratatouille, pleine de saveurs et de fraîcheur. Très généreuse en portion.",
-          rating: 5,
-          emoji: "🥩"
-        },
-      ],
-  },
-  {
-    id: 2,
-    title: "Tikka",
-    description: "This is the description of Marker 2",
-    type : "restaurant indien",
-    coordinate: { latitude: 49.3005, longitude: 2.640 },
-    image: "cafe",
-    rating: 4,
-    reviews: [
-        {
-          name: "Jean Dupont",
-          dish: "Boeuf Bourguignon",
-          price: 25,
-          comment: "Le boeuf était parfaitement cuit, tendre et savoureux. L'accompagnement de légumes était délicieux.",
-          rating: 4.5,
-          emoji: "🥩"
-        },
-        {
-          name: "Marie Martin",
-          dish: "Coq au Vin",
-          price: 22,
-          comment: "Un plat classique, mais avec une touche moderne. Les saveurs étaient bien équilibrées.",
-          rating: 4,
-          emoji: "🥩"
-        },
-        {
-          name: "Pierre Lefèvre",
-          dish: "Tarte Tatin",
-          price: 8,
-          comment: "Dessert excellent, mais la pâte aurait pu être un peu plus croustillante.",
-          rating: 4.5,
-          emoji: "🥩"
-        },
-        {
-          name: "Sophie Durand",
-          dish: "Ratatouille",
-          price: 18,
-          comment: "Délicieuse ratatouille, pleine de saveurs et de fraîcheur. Très généreuse en portion.",
-          rating: 5,
-          emoji: "🥩"
-        },
-      ],
-  },
-];
 
 const App = () => {
     const mapRef = useRef(null);
@@ -161,6 +69,17 @@ const App = () => {
       forceRerender();
       //console.log(restaurants[0].coordinate.coordinates[0])
     }, [restaurants]);
+
+
+    useEffect(() => {
+      return () => {
+        if (currentMapRegion) {
+          AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(currentMapRegion));
+          console.log("Sauvegarde de la position");
+        }
+      };
+    }, [currentMapRegion]);
+    
   
     useEffect(() => {
       const loadStoredLocation = async () => {
@@ -172,7 +91,7 @@ const App = () => {
           } else {
             setStoredLocation(DEFAULT_LOCATION);
           }
-          handleLocationButtonPress(first = true);
+          //handleLocationButtonPress(first = true);
         } catch (e) {
           console.log("Erreur lors du chargement de la position stockée", e);
         }
@@ -341,12 +260,12 @@ const App = () => {
           style={{ flex: 1 }}
           key={mapKey}
           radius={Dimensions.get('window').width * 0.15}
-            onRegionChangeComplete={(region) => {setCurrentMapRegion(region)}}
+            onRegionChangeComplete={(region) => {setCurrentMapRegion(region);}}
           initialRegion={{
             latitude: storedLocation?.latitude || DEFAULT_LOCATION.latitude,
             longitude: storedLocation?.longitude || DEFAULT_LOCATION.longitude,
-            latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
+            latitudeDelta: storedLocation?.latitudeDelta || 0.0922,
+            longitudeDelta: storedLocation?.longitudeDelta || 0.0421,
           }}
           mapType={mapType}
           userInterfaceStyle={themeName === 'dark' ? 'dark' : 'light'}
@@ -569,7 +488,7 @@ const App = () => {
                 alignItems: 'center',
             }} >
                 {/* <FontAwesome6 style={{alignSelf : "center"}} name="crosshairs" size={30} color={theme.text} /> */}
-                <CustomPin theme={theme} text={"Nouvelle pépite"}/>
+                <CustomPin theme={theme} text={ addingNewRestaurant ? "Nouvelle pépite" : "Placement"}/>
              </View>
             )}
   
@@ -705,7 +624,7 @@ const ModalMarker = ({ selectedMarkerId, closeModal, animatedHeight,setReplacing
 
     // if images[selectedMarker.type] is not found, use the default image : images["default"]
 
-    const { restaurants } = useRestaurant();
+    const { restaurants,updateRestaurant } = useRestaurant();
 
     let selectedMarker = restaurants.find((r) => r.id === selectedMarkerId);
 
@@ -1125,7 +1044,7 @@ const ModalMarker = ({ selectedMarkerId, closeModal, animatedHeight,setReplacing
 
             <View style={{ paddingHorizontal: 20,width : "50%",marginTop : 20 }}>
             
-            {selectedMarker.reviews && selectedDish && selectedMarker.reviews.filter(review => review.dish == selectedDish.dish  ).map((review, index) => (
+            {selectedMarker.reviews && selectedDish && selectedMarker.reviews.filter(review => review.dish.name == selectedDish.dish.name  ).map((review, index) => (
               <View key={index} style={{ marginBottom: 10, backgroundColor : theme.light_gray,padding : 5,paddingHorizontal : 8,borderRadius : 10 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                     <View style={{ flexDirection: 'row',marginBottom : 5,marginTop : 5, alignItems: 'center' }}>
@@ -1219,16 +1138,47 @@ const ModalMarker = ({ selectedMarkerId, closeModal, animatedHeight,setReplacing
                         [
                             { label: isPersonalReview ? "Modifer" : "Les informations de ce commentaires ne sont plus valables",
                                handle: async  () => {
+
+                                if(!isPersonalReview)
+                                {
+                                  closeReviewMenueModal()
+                                  
+                                }
+                                else{
                                 const username = await AsyncStorage.getItem("username");
 
                                 const rating = selectedMarker.ratings.find(rating => rating.username.toLocaleLowerCase() == username.toLocaleLowerCase())?.rating || -1;
 
                                         navigation.navigate("NewAvisView",{EnvoieDirect : true,avisModifier : avis,restaurantId : selectedMarker.id,rating});
-                                        closeReviewMenueModal()
+                                        closeReviewMenueModal()}
                                 } },
                                 
 
-                            { label: isPersonalReview ? "Supprimer" : "Le commentaire n'est pas approprié",dangerous : true, handle: () => console.log("Supprimer") },
+                            { label: isPersonalReview ? "Supprimer" : "Le commentaire n'est pas approprié",dangerous : true, handle: async () =>{
+                              
+                                closeReviewMenueModal()
+                                try {
+                                  const res = await deleteReview(selectedMarker.id,avis.id)
+                                  if(res.error)
+                                      {
+                                          throw res.error;
+                                      }
+                                  ToastNotif("Avis supprimé avec succès", "check-circle", theme, "green", 2000);
+
+                                  Haptics.notificationAsync(
+                                      Haptics.NotificationFeedbackType.Success
+                                    )
+                                    updateRestaurant(selectedMarker.id ,res.newData)
+                                  console.log(res.newData)
+                              }
+                              catch (e) {
+                                console.log(e);
+                                  ToastNotif("Erreur lors de la suppression de l'avis", "times-circle", { button_background: "red", text: "white" }, "white", 3000);
+                                  Haptics.notificationAsync(
+                                      Haptics.NotificationFeedbackType.Error
+                                    )
+                              }
+                            } },
                         ]}
                 />   
 

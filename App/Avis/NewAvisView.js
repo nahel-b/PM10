@@ -118,7 +118,7 @@ const NewAvisView = () => {
 
     const handleSliderChange = (value) => {
         setPrix(value);
-        if (Math.abs(value - previousSliderValue) >= 0.25) {
+        if (Math.abs(value - previousSliderValue) >= 0.01) {
             Haptics.selectionAsync();
             setPreviousSliderValue(value);
         }
@@ -288,8 +288,8 @@ const NewAvisView = () => {
                     <Slider
                         style={{ flex: 1, marginRight: 10 }}
                         minimumValue={0}
-                        maximumValue={12}
-                        step={0.25}
+                        maximumValue={10.5}
+                        step={0.10}
                         value={prix}
                         onValueChange={handleSliderChange}
                         minimumTrackTintColor={theme.dark_gray}

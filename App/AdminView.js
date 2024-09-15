@@ -268,14 +268,17 @@ function AdminView ({})  {
 const Report = ({theme}) => {
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+
+            
             
 
             <ScrollView style={{ width : "100%",alignSelf : "center", marginTop : 30}}>
                 <View style={{alignItems: 'center', width : "100%", alignSelf : "center" }}>
             {reviews.map((review, index) => (
 
-                <View key={index} style={{ marginBottom: 15, backgroundColor : theme.light_gray,padding : 5,paddingHorizontal : 8,borderRadius : 10,width : "90%" }}>
+                <View key={index} style={{ marginBottom: 15, backgroundColor : theme.background,padding : 5,paddingHorizontal : 8,borderRadius : 10,width : "90%" }}>
                     <AvisComp key={index} review={review} theme={theme} openModal={() => console.log("openModal")} />
+                <View style={{borderTopWidth : 1, borderColor : theme.gray, marginTop : 10}}></View>
                 </View>
             ))}
             </View>
@@ -303,7 +306,7 @@ const Ajout = ({theme}) => {
 const AvisComp = ({review,theme,openModal}) => {
 
     return(
-        <View style={{ width : "100%", backgroundColor : theme.light_gray,padding : 5,paddingHorizontal : 8,borderRadius : 10, }}>
+        <View style={{ width : "100%", backgroundColor : theme.background,padding : 5,paddingHorizontal : 8,borderRadius : 10, }}>
             
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
