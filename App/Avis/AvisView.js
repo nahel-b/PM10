@@ -101,6 +101,7 @@ export default AvisViewPrincipal = () => {
                   )
                   //console.log(res.newData)
                 updateRestaurant(restaurant.id,res.newData)
+                setRating(rating);
             }
             catch (e) {
                 ToastNotif("Erreur lors de l'ajout de la note", "times-circle", { button_background: "red", text: "white" }, "white", 3000);

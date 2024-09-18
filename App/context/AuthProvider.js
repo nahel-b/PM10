@@ -10,15 +10,26 @@ import { BackendContext } from './BackendProvider';
 
 export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(true);
-    const { setRestaurants, setTypeRestaurants,refreshDataRestaurant } = useRestaurant();
+    const { setRestaurants, setTypeRestaurants,refreshDataRestaurant,refreshDataReport } = useRestaurant();
     const { theme } = useTheme();
     const { isBackendConnected } = React.useContext(BackendContext); // Check backend connection
 
+    const [authLevel, setAuthLevel] = useState(0);
 
     const logout = async () => {
         await AsyncStorage.removeItem('authToken');
         setIsAuthenticated(false);
     };
+
+    useEffect( () => {
+        AsyncStorage.getItem('authLevel').then((value) => { 
+            if(value)
+                {
+                    setAuthLevel(value);
+                }
+        }
+        );
+    }, []);
 
     const checkAuthToken = async () => {
         const token = await AsyncStorage.getItem('authToken');
@@ -77,11 +88,17 @@ export const AuthProvider = ({ children }) => {
 
         if (isAuthenticated && isBackendConnected) {
         loadAllRestaurants();
+        if(authLevel>0)
+            {
+                
+                refreshDataReport()
+
+            }
         }
     }, [isAuthenticated,isBackendConnected]);
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated,logout }}>
+        <AuthContext.Provider value={{authLevel,setAuthLevel, isAuthenticated, setIsAuthenticated,logout }}>
             {children}
         </AuthContext.Provider>
     );

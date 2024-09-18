@@ -18,19 +18,21 @@ const AuthScreen = ({ navigation }) => {
     const [message, setMessage] = useState('');
     const [isLogin, setIsLogin] = useState(true);
 
-    const {setIsAuthenticated} = useContext(AuthContext);
+    const {setIsAuthenticated,setAuthLevel} = useContext(AuthContext);
 
     const onChangeHandler = () => {
         setIsLogin(!isLogin);
         setMessage('');
     };
 
-    const onLoggedIn = async (token) => { 
+    const onLoggedIn = async (token,authLevel) => { 
         await AsyncStorage.setItem('authToken', token);
         await AsyncStorage.setItem('username', username.toLocaleLowerCase());
         // navigation.navigate('MapView'); 
         console.log("oe")
         setIsAuthenticated(true);
+        setAuthLevel(authLevel);
+        await AsyncStorage.setItem('authLevel', authLevel.toString());
     }
 
     const onSubmitHandler = () => {
@@ -58,7 +60,7 @@ const AuthScreen = ({ navigation }) => {
                     setMessage(jsonRes.message);
                 } else {
                     if(isLogin){
-                        onLoggedIn(jsonRes.token);
+                        onLoggedIn(jsonRes.token,jsonRes.authLevel);
                     }
                     else{
                         setIsLogin(true);

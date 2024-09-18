@@ -8,6 +8,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import { TabView, SceneMap } from 'react-native-tab-view';
 
+import ReportView from './ReportView';
 
 const { height: windowHeight, width: windowWidth } = Dimensions.get('window');
 
@@ -66,6 +67,7 @@ const reviews = [
       },
   ]
 
+
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
@@ -81,17 +83,17 @@ import Animated, {
 
 
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import { useTheme } from './context/ThemeContext';
-import { useRestaurant } from './context/RestaurantsContext';
+import { useTheme } from '../context/ThemeContext';
+import { useRestaurant } from '../context/RestaurantsContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { useNavigation,useRoute,useIsFocused } from '@react-navigation/native';
-import CustomModal from './ModalMenue';
+import CustomModal from '../ModalMenue';
 import Slider from '@react-native-community/slider';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { Rating } from 'react-native-ratings';
-import { ToastNotif } from './Utils';
+import { ToastNotif } from '../Utils';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView } from 'react-native-gesture-handler';
 
@@ -102,6 +104,8 @@ function AdminView ({})  {
     const insets = useSafeAreaInsets();
     const navigation = useNavigation()
     const [isModalVisible, setIsModalVisible] = useState(false);
+
+    const { reportData,refreshDataReport } = useRestaurant();
 
     const openModal = () => {
       setIsModalVisible(true);
@@ -135,7 +139,7 @@ function AdminView ({})  {
     { key: 'Ajout', title: 'Ajout' },
   ]);
   const renderScene = SceneMap({
-    Report: () => <Report theme={theme} />,
+    Report: () => <ReportView reportData={reportData} theme={theme} />,
     Log: () => <Log theme={theme} />,
     Ajout: () => <Ajout theme={theme} />,
   });
@@ -166,7 +170,7 @@ function AdminView ({})  {
           position: 'absolute',
           width: windowWidth*0.95/3,
           height: '100%',
-          backgroundColor: theme.light_gray, // Couleur de l'indicateur
+          backgroundColor: theme.background_blue, // Couleur de l'indicateur
           borderRadius: 10,
         },
         
@@ -265,27 +269,6 @@ function AdminView ({})  {
         </View>
     );
 };
-const Report = ({theme}) => {
-    return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-
-            
-            
-
-            <ScrollView style={{ width : "100%",alignSelf : "center", marginTop : 30}}>
-                <View style={{alignItems: 'center', width : "100%", alignSelf : "center" }}>
-            {reviews.map((review, index) => (
-
-                <View key={index} style={{ marginBottom: 15, backgroundColor : theme.background,padding : 5,paddingHorizontal : 8,borderRadius : 10,width : "90%" }}>
-                    <AvisComp key={index} review={review} theme={theme} openModal={() => console.log("openModal")} />
-                <View style={{borderTopWidth : 1, borderColor : theme.gray, marginTop : 10}}></View>
-                </View>
-            ))}
-            </View>
-            </ScrollView>
-        </View>
-    )
-}
 const Log = ({theme}) => {
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -302,62 +285,5 @@ const Ajout = ({theme}) => {
     )
 }
 
-
-const AvisComp = ({review,theme,openModal}) => {
-
-    return(
-        <View style={{ width : "100%", backgroundColor : theme.background,padding : 5,paddingHorizontal : 8,borderRadius : 10, }}>
-            
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <View>
-                                    <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 15, color: theme.gray }}>
-                                        {review.emoji} {review.dish}
-                                    </Text>
-                                </View>
-                                <View style={{ backgroundColor: theme.white, padding: 2,paddingHorizontal : 4, borderRadius: 5, marginLeft: 3, alignItems: 'center' }}>
-                                    <Text style={{marginTop : 3, color: theme.dark_gray, fontFamily: 'Inter-SemiBold', fontSize: 13 }}>
-                                        {review.nbReport} report
-                                    </Text>
-                                </View>
-                            </View>
-                            <View>
-                                <TouchableOpacity onPress={openModal}>
-                                <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 11, color: 'gray', textDecorationLine: 'none' }}>
-                                    <Feather name="more-horizontal" size={25} color="gray" />
-                                </Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-
-
-                        <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 15, color: theme.text, marginVertical: 5 }}>
-                        {review.comment}
-                        </Text>
-                        
-
-                        <View style={{marginTop : 10, flexDirection: 'row',justifyContent : "space-around", alignItems: 'center' }}>
-                            <TouchableOpacity style={{ backgroundColor: theme.background_red, padding: 5, borderRadius: 10, marginRight: 5 }}>
-                                <View style={{ flexDirection: 'row',paddingVertical : 2, paddingHorizontal : 5, alignItems: 'center' }}>
-                                    <FontAwesome name="times" size={15} color={theme.red} />
-                                    <Text style={{marginLeft : 3, color: theme.red, fontFamily: 'Inter-SemiBold', fontSize: 15 }}>
-                                        Refuser
-                                    </Text>
-                                </View>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity style={{ backgroundColor: theme.background_green, padding: 5, borderRadius: 10 }}>
-                            <View style={{ flexDirection: 'row',paddingVertical : 2, paddingHorizontal : 5, alignItems: 'center' }}>
-                                    <FontAwesome name="check" size={15} color={theme.green} />
-                                    <Text style={{marginLeft : 3, color: theme.green, fontFamily: 'Inter-SemiBold', fontSize: 15 }}>
-                                        Accepter
-                                    </Text>
-                                </View>
-                            </TouchableOpacity>
-                        </View>
-
-                    </View>
-    )
-}
 
 export default AdminView;

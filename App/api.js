@@ -34,14 +34,14 @@ const fetchWithToken = async (url, options = {},logout) => {
             logout();
             return null;  
         }
-        if (!response.ok) {
+        if (!response.ok ) {
             //console.error('Fetch with token failed:', response);
            // console.log(response)
             const res = await response.json();
             console.log(res)
             if(res.message)
                 {
-                    throw new Error(response.message);
+                    throw new Error(response);
                 }
             else{throw new Error('Network response was not ok');}
             
@@ -197,7 +197,56 @@ const deleteAccount = async (logout) => {
 }
 
 
+//route du backend : router.get("/restaurants/reports", async (req, res) => {
+
+const getRestaurantReports = async () => {
+    const url = `${API_URL}/restaurants/reports`;  // L'URL de l'API pour récupérer les signalements
+
+    try {
+        const response = await fetchWithToken(url);
+
+        return response;  // Retourne la liste des signalements
+    } catch (error) {
+        console.error('Failed to fetch reports:', error);
+        throw error;
+    }
+}
+
+const reportReview = async (restaurantId, reviewId, reportData) => {
+    const url = `${API_URL}/restaurants/${restaurantId}/reviews/${reviewId}/report`;  // L'URL de l'API pour signaler un avis
+
+    try {
+        const response = await fetchWithToken(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(reportData),
+        });
+
+        return response;  // Retourne la réponse avec le signalement
+    } catch (error) {
+        
+        throw error;
+    }
+}
+
+const deleteAllReports = async (restaurantId, reviewId) => {
+    const url = `${API_URL}/restaurants/${restaurantId}/reviews/${reviewId}/report/all`;  
+
+    try {
+        const response = await fetchWithToken(url, {
+            method: 'DELETE',
+        });
+
+        return response;  // Retourne la réponse avec les signalements supprimés
+    } catch (error) {
+        console.error('Failed to delete reports:', error);
+        throw error;
+    }
+}
 
 
 
-export {fetchWithToken,getAllDish,deleteReview,addReviewToRestaurant, addRestaurant,deleteAccount,SendRatingRestaurant, getNearbyRestaurants, getAllRestaurants, getAllTypeRestaurants};
+
+export {fetchWithToken,getRestaurantReports,getAllDish,deleteAllReports,reportReview,deleteReview,addReviewToRestaurant, addRestaurant,deleteAccount,SendRatingRestaurant, getNearbyRestaurants, getAllRestaurants, getAllTypeRestaurants};

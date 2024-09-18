@@ -12,12 +12,14 @@ const CustomModal = ({ visible, onClose, options,title }) => {
 
   const { theme } = useTheme();
 
+  const options_filtre = options.filter(option => option);
+
   if (visible) {
     opacity.value = withTiming(1, { duration: 300, easing: Easing.out(Easing.exp) });
     translateY.value = withTiming(0, { duration: 300, easing: Easing.out(Easing.exp) });
   } else {
     opacity.value = withTiming(0, { duration: 300, easing: Easing.in(Easing.exp) });
-    translateY.value = withTiming(100, { duration: 300, easing: Easing.in(Easing.exp) });
+    translateY.value = withTiming(300, { duration: 300, easing: Easing.in(Easing.exp) });
   }
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -80,6 +82,7 @@ const CustomModal = ({ visible, onClose, options,title }) => {
 
   return (
     <Modal visible={visible} transparent animationType="fade">
+      <TouchableOpacity activeOpacity={1} style={{flex : 1}}  onPress={onClose}>
       <SafeAreaView style={styles.overlay}>
         <Animated.View style={[styles.modalContainer, animatedStyle]}>
 
@@ -96,19 +99,24 @@ const CustomModal = ({ visible, onClose, options,title }) => {
           </View>
           
           <SafeAreaView style={{ backgroundColor : theme.light_gray, borderRadius : 10 }}>
-            {options.map((option, index) => (
+            {options_filtre.map((option, index) => {
+              if(!option) return null;
+
+              return (
               <React.Fragment key={index}>
                 <TouchableOpacity style={styles.option} onPress={option.handle}>
                   <Text adjustsFontSizeToFit={true} numberOfLines={2} style={[styles.optionText,option.dangerous ? styles.dangerousText : {}]}>{option.label}</Text>
                 </TouchableOpacity>
-                {index < options.length - 1 && (
+                {index < options_filtre.length - 1 && (
                   <View style={{borderBottomWidth : 1, borderBottomColor : theme.gray, marginHorizontal : 20}} />
                 )}
               </React.Fragment>
-            ))}
+              )
+        })}
           </SafeAreaView>
         </Animated.View>
       </SafeAreaView>
+      </TouchableOpacity>
     </Modal>
   );
 };

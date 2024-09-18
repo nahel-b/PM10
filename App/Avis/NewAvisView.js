@@ -117,11 +117,15 @@ const NewAvisView = () => {
 
 
     const handleSliderChange = (value) => {
-        setPrix(value);
-        if (Math.abs(value - previousSliderValue) >= 0.01) {
-            Haptics.selectionAsync();
+         setPrix(Math.round(value * 10) / 10)   
+        //arrondir a 0.1 près
+        if (Math.abs(value - previousSliderValue) >= 0.1) {
+            Haptics.notificationAsync(
+                Haptics.NotificationFeedbackType.Success
+              )
             setPreviousSliderValue(value);
         }
+        
     };
 
 
@@ -289,7 +293,7 @@ const NewAvisView = () => {
                         style={{ flex: 1, marginRight: 10 }}
                         minimumValue={0}
                         maximumValue={10.5}
-                        step={0.10}
+                        step={0.1}
                         value={prix}
                         onValueChange={handleSliderChange}
                         minimumTrackTintColor={theme.dark_gray}
@@ -306,7 +310,11 @@ const NewAvisView = () => {
                             }}
 
                         onSlidingComplete={() =>
-                            {setIsSliderActive(false)
+
+                            {
+                                //arrondir à 0.1 près
+                                setPrix(Math.round(prix * 10) / 10)
+                                setIsSliderActive(false)
                                Haptics.notificationAsync(
                                 Haptics.NotificationFeedbackType.Success
                                 ) 

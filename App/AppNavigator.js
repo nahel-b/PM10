@@ -7,7 +7,7 @@ import AvisView from './Avis/AvisView';
 import ReglageView from './ReglageView';
 import NewAvisView from './Avis/NewAvisView';
 import NewRestaurantView from './NewRestaurantView'
-import AdminView from './AdminView'
+import AdminView from './Admin/AdminView'
 
 import 'react-native-gesture-handler';
 import { enableScreens } from 'react-native-screens';
