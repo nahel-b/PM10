@@ -10,7 +10,7 @@ import { BackendContext } from './BackendProvider';
 
 export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(true);
-    const { setRestaurants, setTypeRestaurants,refreshDataRestaurant,refreshDataReport } = useRestaurant();
+    const { setRestaurants, setTypeRestaurants,refreshDataRestaurant,refreshDataReport,refreshDataAjout } = useRestaurant();
     const { theme } = useTheme();
     const { isBackendConnected } = React.useContext(BackendContext); // Check backend connection
 
@@ -67,10 +67,7 @@ export const AuthProvider = ({ children }) => {
         const loadAllRestaurants = async () => {
             
                 try {
-                    ToastNotif("Récupération des restaurants...", "loading-cricle", {
-                        button_background: theme.background,
-                        text: theme.text,
-                    }, theme.text, 10000, "bottom", true);
+                    ToastNotif("Récupération des restaurants...", "loading-cricle", theme, theme.text, 10000, "bottom", true);
                   
                     const restaurants = await getAllRestaurants(logout);
                     setRestaurants(restaurants);
@@ -78,10 +75,8 @@ export const AuthProvider = ({ children }) => {
                     ToastHide();
                 } catch (error) {
                     console.error('Erreur lors de la récupération des restaurants:', error);
-                    ToastNotif("Erreur lors de la récupération des restaurants", "times-circle", {
-                        button_background: "red",
-                        text: "white",
-                    }, "white", 3000);
+                    ToastNotif("Erreur lors de la récupération des restaurants", "times-circle", 
+                        theme, theme.text, 3000);
                 }
             
         };
@@ -92,7 +87,7 @@ export const AuthProvider = ({ children }) => {
             {
                 
                 refreshDataReport()
-
+                refreshDataAjout()
             }
         }
     }, [isAuthenticated,isBackendConnected]);

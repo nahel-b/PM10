@@ -218,7 +218,7 @@ function NewAvisView ({})  {
                             (index === suggestions.length - 1) && inputValue.length > 0  ? (
                                 <>
                                 <FontAwesome name="plus-circle" size={16} color={theme.dark_gray} style={{marginRight : 5  }} />
-                                <Text style={{  color: theme.text,fontFamily : "Inter-Medium" }}>
+                                <Text style={{  color: theme.text,fontFamily : "Inter-SemiBold" }}>
                                     {"Ajouter '"}
                                     <Text style={{  color: theme.text,fontFamily : "Inter-Black" }}>{inputValue}</Text>
                                     {"' à l'appli"} 

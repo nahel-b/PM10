@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, Keyboard } from 'react-native';
+import { View, Text, TextInput, FlatList, TouchableOpacity, Keyboard,Modal,Dimensions } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -11,12 +11,16 @@ import {useRestaurant} from '../context/RestaurantsContext';
 import Slider from '@react-native-community/slider';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import Animated, { Easing, useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+
 
 import { ToastNotif } from '../Utils';
 import { Rating } from 'react-native-ratings';
 import { addReviewToRestaurant } from '../Api';
 import Toast from 'react-native-toast-message';
 
+import { emojis } from '../data/Emojis';
+import { ScrollView } from 'react-native-gesture-handler';
 
 const NewAvisView = () => {
     const { theme, themeName } = useTheme();
@@ -34,6 +38,11 @@ const NewAvisView = () => {
 
     const {dish,updateRestaurant} = useRestaurant();
 
+    const opacity = useSharedValue(0);
+
+    const { restaurants} = useRestaurant();
+
+
 
     // const platsPredefinis = ['🍕 Pizza', '🍝 Pasta', '🥗 Salad', '🍔 Burger', '🍣 Sushi'];
 
@@ -44,12 +53,16 @@ const NewAvisView = () => {
     const [comment,setComment] = useState('');
 
 
+
+
     const platsGlobal = dish;
 
     //TODO : A changer
-    const platsPredefinis = dish;
+    const [platsPredefinis,setPlatsPredefinis] = useState(dish);
     
+    const [emojiModalVisible, setEmojiModalVisible] = useState(false);
 
+    
     
 
     const route = useRoute();
@@ -61,8 +74,43 @@ const NewAvisView = () => {
 
     const {restaurantId} = route.params || null;
 
+    //const translateY = useSharedValue(0);
+
+    if (emojiModalVisible) {
+        opacity.value = withTiming(0.7, { duration: 300, easing: Easing.out(Easing.exp) });
+       // translateY.value = withTiming(0, { duration: 300, easing: Easing.out(Easing.exp) });
+      } else {
+        opacity.value = withTiming(0, { duration: 300, easing: Easing.in(Easing.exp) });
+        //translateY.value = withTiming(300, { duration: 300, easing: Easing.in(Easing.exp) });
+      }
+    
+      const animatedStyle = useAnimatedStyle(() => {
+        return {
+          opacity: opacity.value,
+          zIndex: emojiModalVisible ? 1 : -1,
+         // transform: [{ translateY: translateY.value }],
+        };
+      });
+
     useEffect(() => {
-        setSuggestions(platsPredefinis)
+        //setSuggestions(platsPredefinis)
+
+       //set suggestions de tous les plats du restaurant d'id restaurantId
+
+        if(restaurantId){
+
+            let liste = restaurants.filter(restaurant => restaurant.id == restaurantId)[0].reviews.map(avis => avis.dish);
+            let liste_prix = restaurants.filter(restaurant => restaurant.id == restaurantId)[0].reviews.map(avis => avis.price);
+            setSuggestions([...liste]);
+            setPlatsPredefinis([...liste]);
+            setPrix(Math.max(...liste_prix));
+
+        }
+        //mettre le prix qui apparait le plus dans liste_prix
+
+
+        
+
         if(avisModifier)
             {
                 setSelectedPlat(avisModifier.dish)
@@ -76,9 +124,10 @@ const NewAvisView = () => {
     const handleInputChange = (text) => {
         setInputValue(text);
         setSelectedPlat('');
-
-            const filteredSuggestions = platsGlobal.filter((plat) =>
-            plat.name.toLowerCase().includes(text.toLowerCase())
+            console.log(platsGlobal)
+            const filteredSuggestions = platsGlobal.filter((plat) =>{
+                console.log(plat.name )
+            plat.name.toLowerCase().includes(text.toLowerCase())}
         );
         if (text.length > 0 && !platsPredefinis.map(plat => plat.name).includes(text)) {
             filteredSuggestions.push('Ajouter ce plat');
@@ -93,11 +142,31 @@ const NewAvisView = () => {
     
     };
 
+    const handleEmojiPress = (emoji) => {
+        setSelectedPlat({ ...selectedPlat, emoji }); // Associer l'émoji sélectionné au plat
+        setEmojiModalVisible(false); // Fermer le modal
+    };
+
     const handleSuggestionPress = (suggestion) => {
         if (suggestion === 'Ajouter ce plat') {
 
             console.log("Ajouter un plat à ce restaurant");
+            let newPlat = {
+                name: inputValue,
+                emoji: '🍴',
+                id : 'new'
+            };
+
+            setSelectedPlat(newPlat);
+
+            setEmojiModalVisible(true);
             
+            // unfocus input
+            refInput.current.blur();
+            Haptics.notificationAsync(
+                Haptics.NotificationFeedbackType.Success
+              )
+
 
         } 
         else 
@@ -168,6 +237,18 @@ const NewAvisView = () => {
             width: "100%",
             alignSelf: "center"
         }}>
+            <Animated.View style={[{
+                width: '100%',
+                backgroundColor: "black",
+                borderRadius: 10,
+                padding: 20,
+                alignSelf : 'flex-start',
+                position: 'absolute',
+                top: 0,
+                zIndex: 1,
+                height: '100%'
+
+            }, animatedStyle]}/>
             <TouchableOpacity onPress={() => { navigation.goBack() }}>
                 <View style={{ alignItems: "flex-end", marginRight: 10, marginTop: 10 }}>
                     <Ionicons name="close" size={30} color="gray" />
@@ -187,9 +268,16 @@ const NewAvisView = () => {
             <View style={{flexDirection : 'row', backgroundColor: selectedPlat == '' ? theme.light_gray : theme.background_green, paddingVertical: 10, paddingHorizontal: 5, borderRadius: 10, marginTop: 30, marginHorizontal: 20 }}>
                 
                
+               <TouchableOpacity onPress={() => {
+
+                if(selectedPlat.id == 'new'){
+                setEmojiModalVisible(true)}
+                }
+                }>
                 <Text style={{marginLeft : 2, fontFamily: "Inter-Bold", fontSize: 15, color: theme.dark_gray }}>
                 {selectedPlat && selectedPlat.name && selectedPlat.name.length > 0 ? selectedPlat.emoji : '🍴'}
                 </Text>
+                </TouchableOpacity>
 
                 <TextInput
                     placeholder='Plat (pasta,...)'
@@ -219,7 +307,7 @@ const NewAvisView = () => {
 
                 ((
                         suggestions.length == 1 && inputValue.length > 0 ? (
-                            <Text style={{ marginHorizontal: 22, color: theme.middle_red, marginTop: 5,marginBottom : -2, fontFamily: "Inter-SemiBold" }}>
+                            <Text style={{ marginHorizontal: 22, color: theme.middle_red, marginTop: 5,marginBottom : 0, fontFamily: "Inter-SemiBold" }}>
                                 Ce plat n'existe pas dans l'appli, ameliore l'appli en l'ajoutant 😁
                             </Text>
                         ) : null
@@ -243,7 +331,7 @@ const NewAvisView = () => {
                         (index === suggestions.length - 1) && inputValue.length > 0  ? (
                             <>
                             <FontAwesome name="plus-circle" size={16} color={theme.dark_gray} style={{marginRight : 5  }} />
-                            <Text style={{  color: theme.text,fontFamily : "Inter-Medium" }}>
+                            <Text style={{  color: theme.text,fontFamily : "Inter-SemiBold" }}>
                                 {"Ajouter '"}
                                 <Text style={{  color: theme.text,fontFamily : "Inter-Black" }}>{inputValue}</Text>
                                 {"' à l'appli"} 
@@ -513,7 +601,32 @@ const NewAvisView = () => {
                 onCancel={cancelDatePicker}
                 isDarkModeEnabled={themeName === 'dark'}
             />
-            
+
+
+            <Modal visible={emojiModalVisible} transparent={true} animationType="slide">
+                    <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'center', backgroundColor: 'transparent' }}>
+                        <View style={{ backgroundColor: theme.background, padding: 20, borderRadius: 10 }}>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                            <Text style={{ marginBottom: 10,fontSize : 16,color : theme.text,fontFamily:"inter-Bold" }}>Sélectionnez un émoji</Text>
+                            {/* <FontAwesome name="times" size={20} color={theme.gray} onPress={() => setEmojiModalVisible(false)} /> */}
+                            </View>
+                            <ScrollView style={{maxHeight : Dimensions.get('window').height / 2 }}>
+
+                            <View style={{ flexDirection: 'row',justifyContent : 'center', flexWrap: 'wrap' }}>
+                                {emojis.map((emoji, index) => (
+                                    <TouchableOpacity key={index} onPress={() => handleEmojiPress(emoji)}>
+                                        <Text style={{ fontSize: 30, margin: 10 }}>{emoji}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                            
+                            </ScrollView>
+                            {/* <TouchableOpacity onPress={() => setEmojiModalVisible(false)}>
+                                <Text style={{ color: 'red', marginTop: 20 }}>Annuler</Text>
+                            </TouchableOpacity> */}
+                        </View>
+                    </View>
+                </Modal>
         </View>
     );
 };

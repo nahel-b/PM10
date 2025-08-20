@@ -15,6 +15,8 @@ export const Colors = {
         red : "rgb(255,0,0)",
         middle_red : "rgba(238, 50, 50,0.8)",
         light_red : "rgba(255,0,0,0.2)",
+        orange : "rgb(255,165,0)",
+        background_orange : "rgba(255,165,0,0.2)",
         background_red : "rgba(255,0,0,0.2)"
 
     },
@@ -34,7 +36,9 @@ export const Colors = {
         red : "rgb(238, 50, 50)",
         middle_red : "rgba(238, 50, 50,0.8)",
         light_red : "rgba(238, 50, 50,0.2)",
-        background_red : "rgba(238, 50, 50,0.2)"
+        background_red : "rgba(238, 50, 50,0.2)",
+        orange : "rgb(255,165,0)",
+        background_orange : "rgba(255,165,0,0.2)",
     },
     dark2: {
         background: '#1c1c1e',

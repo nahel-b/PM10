@@ -10,6 +10,8 @@ import { TabView, SceneMap } from 'react-native-tab-view';
 
 import ReportView from './ReportView';
 
+import Ajout from './Ajout';
+
 const { height: windowHeight, width: windowWidth } = Dimensions.get('window');
 
 
@@ -105,7 +107,7 @@ function AdminView ({})  {
     const navigation = useNavigation()
     const [isModalVisible, setIsModalVisible] = useState(false);
 
-    const { reportData,refreshDataReport } = useRestaurant();
+    const { reportData,refreshDataReport, ajoutData } = useRestaurant();
 
     const openModal = () => {
       setIsModalVisible(true);
@@ -141,7 +143,7 @@ function AdminView ({})  {
   const renderScene = SceneMap({
     Report: () => <ReportView reportData={reportData} theme={theme} />,
     Log: () => <Log theme={theme} />,
-    Ajout: () => <Ajout theme={theme} />,
+    Ajout: () => <Ajout ajoutData={ajoutData}  theme={theme} />,
   });
 
     const styles = StyleSheet.create({
@@ -218,9 +220,9 @@ function AdminView ({})  {
             <View style={{flexDirection:"row",alignItems:"center",justifyContent : "center",marginHorizontal : 10}}>
             <MaterialIcons name="report" size={18} color={theme.text} />
                 <Text style={styles.buttonText}>Report</Text>
-                <View style={{backgroundColor : theme.background_blue, borderRadius : 50, padding : 2,marginLeft : 3}}>
-                <Text style={{fontFamily : 'Inter-Black', color : theme.blue}}>3</Text>
-                </View>
+                {reportData.length > 0 && <View style={{backgroundColor : theme.background_blue, borderRadius : 50, padding : 2,marginLeft : 3}}>
+                <Text style={{fontFamily : 'Inter-Black', color : theme.blue}}>{reportData.length}</Text>
+                </View>}
                 </View>
             </TouchableOpacity>
             <TouchableOpacity style={styles.switchButton} onPress={() => handleSwitch(1)}>
@@ -276,14 +278,8 @@ const Log = ({theme}) => {
         </View>
     )
 }
-const Ajout = ({theme}) => {
-    return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Text>Ajout</Text>
-        </View>
 
-    )
-}
+
 
 
 export default AdminView;

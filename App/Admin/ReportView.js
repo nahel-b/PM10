@@ -16,78 +16,6 @@ import { TabView, SceneMap } from 'react-native-tab-view';
 const { height: windowHeight, width: windowWidth } = Dimensions.get('window');
 
 
-//const reportDataJson = '[{"_id":"66e44e9a846e9e45a59104db","id":"a95b1987-fd43-4406-b868-2736a60b8b98","title":"Best Tacos","type":"Restaurant de tacos","coordinate":{"type":"Point","coordinates":[2.6411358584906095,49.29989999999997]},"ratingAverage":4,"ratings":[{"username":"nahel","rating":5},{"username":"nahel2","rating":3}],"reviews":[{"id":"95fa7451-8fb4-4ee2-aa0a-b629ff5254ba","username":"nahel","dish":{"name":"Poulet au curry","emoji":"🍗","id":3},"price":0.5,"comment":"Popopopopo","rating":5,"nbReport":0,"date_ajout":"2024-09-14T17:16:55.461Z","date_visite":"Sat Sep 14 2024","reports":[{"username":"nahel2","raison":"prix","date_ajout":"2024-09-16T13:49:57.062Z"}]},{"id":"d1933b81-a6ff-4e04-8f5e-836aa4391945","username":"nahel2","dish":{"name":"Poulet au curry","emoji":"🍗","id":3},"price":3.5,"comment":"Dkjsnkdjbnksdn","rating":3,"reports":[],"date_ajout":"2024-09-16T13:49:40.600Z","date_visite":"Mon Sep 16 2024"}]},{"_id":"66e5cb1fad1a413a138561c0","id":"32c55d2b-3455-41c7-9e33-713b7eaa1b2e","title":"Tikka","type":"Restaurant de tacos","coordinate":{"type":"Point","coordinates":[2.6406608797208677,49.30017721052099]},"ratingAverage":3,"ratings":[{"username":"nahel","rating":2},{"username":"nahel2","rating":4}],"reviews":[{"id":"a730d2fb-7e61-444b-b89b-fb6f6fc656de","username":"nahel","dish":{"name":"Poulet au curry","emoji":"🍗","id":3},"price":4.25,"comment":"J’adoreo","rating":2,"nbReport":0,"date_ajout":"2024-09-14T17:42:55.652Z","date_visite":"Sun Sep 15 2024","reports":[{"username":"nahel2","raison":"insulte","date_ajout":"2024-09-15T14:56:52.664Z"},{"username":"nahel2","raison":"faux","date_ajout":"2024-09-15T14:56:52.664Z"}]},{"id":"958d72d0-43d2-4c3c-b20e-8c0431f65ec0","username":"nahel2","dish":{"name":"Poulet au curry","emoji":"🍗","id":3},"price":4.5,"comment":"Excellentttttt","rating":4,"reports":[],"date_ajout":"2024-09-15T15:32:35.770Z","date_visite":"Sun Sep 15 2024"}],"date_ajout":"2024-09-14T17:42:55.652Z"}]';
-
-
-const reviews = [
-    {
-      name: "Jean Dupont",
-      dish: "Tacos",
-      price: 5.5,
-      comment: "Le boeuf était parfaitement cuit, tendre et savoureux. L'accompagnement de légumes était délicieux.",
-      rating: 4.5,
-      emoji: "🌯",
-      nbReport : 2
-    },
-    {
-      name: "Marie Martin",
-      dish: "Tacos",
-      price: 5.5,
-      comment: "Un plat classique, mais avec une touche moderne. Les saveurs étaient bien équilibrées.",
-      rating: 4,
-      emoji: "🌯",
-        nbReport : 1
-    },
-    {
-      name: "Pierre Lefèvre",
-      dish: "Salade",
-      price: 8,
-      comment: "plat excellent, mais la pâte aurait pu être un peu plus croustillante.",
-      rating: 4.5,
-      emoji: "🥗",
-      nbReport : 3
-    },
-    {
-      name: "Sophie Durand",
-      dish: "Salade",
-      price: 8,
-      comment: "Délicieuse salade, pleine de saveurs et de fraîcheur. Très généreuse en portion.",
-      rating: 5,
-      emoji: "🥗"
-    },
-    {
-        name: "Sophie Durand",
-        dish: "Salade",
-        price: 8,
-        comment: "Délicieuse salade, pleine de saveurs et de fraîcheur. Très généreuse en portion.",
-        rating: 5,
-        emoji: "🥗"
-      },
-      {
-        name: "Sophie Durand",
-        dish: "Salade",
-        price: 8,
-        comment: "Délicieuse salade, pleine de saveurs et de fraîcheur. Très généreuse en portion.",
-        rating: 5,
-        emoji: "🥗"
-      },
-  ]
-
-
-import Animated, {
-    useSharedValue,
-    useAnimatedStyle,
-    interpolate,
-    Extrapolation,
-    useAnimatedScrollHandler,
-    withSpring,
-    withTiming,
-     Layout,
-    FadeIn,
-    FadeOut,
-  } from 'react-native-reanimated';
-
-
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useTheme } from '../context/ThemeContext';
 import { useRestaurant } from '../context/RestaurantsContext';
@@ -124,7 +52,6 @@ const Report = ({theme,reportData}) => {
 
     const {refreshDataReport} = useRestaurant();
 
-    useEffect(()=>{console.log(reportData)},[])
 
     const handleRestaurantPress = (marker) => {
         setSelectedMarker(marker);

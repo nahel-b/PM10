@@ -247,6 +247,58 @@ const deleteAllReports = async (restaurantId, reviewId) => {
 }
 
 
+const getReviewsAttente = async () => {
+    const url = `${API_URL}/restaurants/reviews/attente`;  // L'URL de l'API pour récupérer les avis en attente
+
+    try {
+        const response = await fetchWithToken(url);
+
+        return response;  // Retourne la liste des avis en attente
+    } catch (error) {
+        console.error('Failed to fetch reviews:', error);
+        throw error;
+    }
+}
 
 
-export {fetchWithToken,getRestaurantReports,getAllDish,deleteAllReports,reportReview,deleteReview,addReviewToRestaurant, addRestaurant,deleteAccount,SendRatingRestaurant, getNearbyRestaurants, getAllRestaurants, getAllTypeRestaurants};
+// fct pour la route : router.post('/restaurants/reviews/attente/:id/accept', avec le dish dans le body
+
+const acceptReviewAttente = async (restaurantId, reviewId, dish) => {
+    const url = `${API_URL}/restaurants/reviews/attente/${reviewId}/accept`;  // L'URL de l'API pour accepter un avis
+
+    try {
+        const response = await fetchWithToken(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ dish }),
+        });
+
+        return response;  // Retourne la réponse avec l'avis accepté
+    } catch (error) {
+        console.error('Failed to accept review:', error);
+        throw error;
+    }
+}
+
+// fct pour la route : outer.delete('/restaurants/reviews/attente/:id', async (req, res) => {
+
+const deleteReviewAttente = async (reviewId) => {
+    const url = `${API_URL}/restaurants/reviews/attente/${reviewId}`;  // L'URL de l'API pour supprimer un avis en attente
+
+    try {
+        const response = await fetchWithToken(url, {
+            method: 'DELETE',
+        });
+    
+        return response;  // Retourne la réponse avec l'avis supprimé
+    }
+    catch (error) {
+        console.error('Failed to delete review:', error);
+        throw error;
+    }
+}
+
+
+export {fetchWithToken,acceptReviewAttente,deleteReviewAttente,getRestaurantReports,getReviewsAttente,getAllDish,deleteAllReports,reportReview,deleteReview,addReviewToRestaurant, addRestaurant,deleteAccount,SendRatingRestaurant, getNearbyRestaurants, getAllRestaurants, getAllTypeRestaurants};
