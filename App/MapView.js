@@ -6,7 +6,8 @@ import { Animated as RNAnimated } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
 
-import { Marker } from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
+import ClusteredMapView from "react-native-map-clustering";
 import * as Location from 'expo-location';
 import { PanGestureHandler, GestureHandlerRootView, State, TextInput } from 'react-native-gesture-handler';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -33,8 +34,6 @@ import * as Haptics from 'expo-haptics';
 import {AuthContext} from './context/AuthProvider';
 
 import  CustomModal from './ModalMenue';
-
-import MapView from "react-native-map-clustering";
 import { useRestaurant } from './context/RestaurantsContext';
 import Toast from 'react-native-toast-message';
 
@@ -45,7 +44,7 @@ const STORAGE_KEY = "lastLocation";
 
 
 const App = () => {
-    const mapRef = useRef(null);
+    const [mapRef, setMapRef] = useState(null);
     const [selectedMarker, setSelectedMarker] = useState(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [location, setLocation] = useState(null);
@@ -142,8 +141,8 @@ const App = () => {
     };
   
     const centerMapOnLocation = () => {
-      if (mapRef.current && storedLocation) {
-        mapRef.current.animateToRegion({
+      if (mapRef && storedLocation) {
+        mapRef.animateToRegion({
           latitude: storedLocation.latitude,
           longitude: storedLocation.longitude,
           latitudeDelta: 0.01,
@@ -169,7 +168,7 @@ const App = () => {
 
       
   
-      mapRef.current.animateToRegion({
+      mapRef.animateToRegion({
         latitude: marker.coordinate.coordinates[1] - 0.0001,
         longitude: marker.coordinate.coordinates[0],
         latitudeDelta: 0.001,
@@ -261,11 +260,10 @@ const App = () => {
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>
         <MapView
-          ref={mapRef}
+          ref={setMapRef}
           style={{ flex: 1 }}
           key={mapKey}
-          radius={Dimensions.get('window').width * 0.15}
-            onRegionChangeComplete={(region) => {setCurrentMapRegion(region);}}
+          onRegionChangeComplete={(region) => {setCurrentMapRegion(region);}}
           initialRegion={{
             latitude: storedLocation?.latitude || DEFAULT_LOCATION.latitude,
             longitude: storedLocation?.longitude || DEFAULT_LOCATION.longitude,
@@ -276,24 +274,6 @@ const App = () => {
           userInterfaceStyle={themeName === 'dark' ? 'dark' : 'light'}
           onPress={handleMapPress}
           showsUserLocation={true}
-            renderCluster={(cluster) => {
-            const { id, geometry, properties } = cluster;
-            const points = properties.point_count;
-
-            return (
-              <Marker
-                key={`cluster-${id}`}
-                coordinate={{
-                  longitude: geometry.coordinates[0],
-                  latitude: geometry.coordinates[1]
-                }}
-                zIndex={2}
-                onPress={() => console.log("Cluster pressed")}
-              >
-                <CustomCluster count={points} />
-              </Marker>
-            );
-          }}
         >
           {markers && 
             markers.map((marker) => {
