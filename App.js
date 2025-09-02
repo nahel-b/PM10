@@ -13,6 +13,8 @@ import { getAllRestaurants,getAllTypeRestaurants } from './App/Api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AuthScreen from './App/AuthScreen';
 
+import AvatarCreationScreen from './App/AvatarCreationScreen';
+
 const WaitBackendScreen = () => {
   const [attente, setAttente] = useState(0);
 
@@ -30,6 +32,7 @@ const WaitBackendScreen = () => {
   ,[]);
 
 
+  
 
   return (
     <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.background }}>
@@ -74,6 +77,7 @@ const Principal = ({ }) => {
   const { isBackendConnected,isfirstCheck } = useContext(BackendContext);
   
   
+  
 
 
   if (!isBackendConnected && !isfirstCheck) {
@@ -101,6 +105,7 @@ export default function App() {
       <RestaurantProvider>
         <BackendProvider>
           <AuthProvider>
+            
             <Principal />
             <ToastObj /> 
           </AuthProvider>

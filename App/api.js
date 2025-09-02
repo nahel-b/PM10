@@ -73,6 +73,41 @@ const addRestaurant = async (restaurantData) => {
     }
 };
 
+
+const getUserInfo = async (logout) => {
+    const url = `${API_URL}/user/info`;
+
+    try {
+        const response = await fetchWithToken(url, {}, logout);
+        return response;
+    } catch (error) {
+        console.error('Failed to fetch user info:', error);
+        throw error;
+    }
+};
+
+const postUserInfo = async (avatar, logout) => {
+    const url = `${API_URL}/user/info`;
+
+    try {
+        const response = await fetchWithToken(
+            url,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ avatar }),
+            },
+            logout
+        );
+        return response;
+    } catch (error) {
+        console.error('Failed to update user info:', error);
+        throw error;
+    }
+}
+
 // Fonction pour récupérer les restaurants autour d'un centre donné
 const getNearbyRestaurants = async (navigation,lat, lon, distance) => {
     const url = `${API_URL}/restaurants/around?lat=${lat}&lon=${lon}&distance=${distance}`;  // L'URL de l'API pour récupérer les restaurants
@@ -301,4 +336,4 @@ const deleteReviewAttente = async (reviewId) => {
 }
 
 
-export {fetchWithToken,acceptReviewAttente,deleteReviewAttente,getRestaurantReports,getReviewsAttente,getAllDish,deleteAllReports,reportReview,deleteReview,addReviewToRestaurant, addRestaurant,deleteAccount,SendRatingRestaurant, getNearbyRestaurants, getAllRestaurants, getAllTypeRestaurants};
+export {getUserInfo, postUserInfo, fetchWithToken,acceptReviewAttente,deleteReviewAttente,getRestaurantReports,getReviewsAttente,getAllDish,deleteAllReports,reportReview,deleteReview,addReviewToRestaurant, addRestaurant,deleteAccount,SendRatingRestaurant, getNearbyRestaurants, getAllRestaurants, getAllTypeRestaurants};

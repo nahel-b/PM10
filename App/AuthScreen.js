@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {API_URL} from './config/Config';
 import { AuthContext } from './context/AuthProvider';
+import { DEFAULT_CHARACTERS } from './avatar/src/utils';
 
 const AuthScreen = ({ navigation }) => {
 
@@ -42,7 +43,7 @@ const AuthScreen = ({ navigation }) => {
             surname,
             username,
             password,
-
+            avatar : DEFAULT_CHARACTERS
         };
         fetch(`${API_URL}/${isLogin ? 'login' : 'signup'}`, {
             method: 'POST',

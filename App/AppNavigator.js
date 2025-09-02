@@ -9,6 +9,8 @@ import NewAvisView from './Avis/NewAvisView';
 import NewRestaurantView from './NewRestaurantView'
 import AdminView from './Admin/AdminView'
 
+import AvatarCreationView from './AvatarCreationScreen';
+
 import 'react-native-gesture-handler';
 import { enableScreens } from 'react-native-screens';
 import 'react-native-reanimated';
@@ -24,6 +26,8 @@ export default function AppNavigator({  }) {
           headerShown: false,
         }}
       >
+
+       
             
           <Stack.Screen
               name="MapView" 
@@ -45,6 +49,16 @@ export default function AppNavigator({  }) {
               name="ReglageView"
               component={ReglageView}
             />
+
+             <Stack.Screen
+              name="AvatarCreation" 
+              component={AvatarCreationView} 
+              options={{
+                ...TransitionPresets.ModalSlideFromBottomIOS, // Applique l'effet modal
+               
+              }}
+            />
+
             {/* Modal navigation for NewAvisView */}
             <Stack.Screen
               name="NewAvisView"

@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '../config/Config';
-import { getAllRestaurants, getAllTypeRestaurants } from '../Api';
+import { getAllRestaurants, getAllTypeRestaurants, getUserInfo } from '../Api';
 import { ToastNotif, ToastHide } from '../Utils';
 import { useRestaurant } from './RestaurantsContext';
 import { useTheme } from './ThemeContext';
@@ -10,7 +10,7 @@ import { BackendContext } from './BackendProvider';
 
 export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(true);
-    const { setRestaurants, setTypeRestaurants,refreshDataRestaurant,refreshDataReport,refreshDataAjout } = useRestaurant();
+    const { setRestaurants, setTypeRestaurants,refreshDataRestaurant,refreshDataReport,refreshDataAjout,setAvatar } = useRestaurant();
     const { theme } = useTheme();
     const { isBackendConnected } = React.useContext(BackendContext); // Check backend connection
 
@@ -64,6 +64,12 @@ export const AuthProvider = ({ children }) => {
     // Load restaurants only when authenticated
     useEffect(() => {
 
+
+        const getUser = async () => {
+            const {avatar} = await getUserInfo();
+            if(avatar){setAvatar(avatar);}   
+        };   
+ 
         const loadAllRestaurants = async () => {
             
                 try {
@@ -77,8 +83,8 @@ export const AuthProvider = ({ children }) => {
                     console.error('Erreur lors de la récupération des restaurants:', error);
                     ToastNotif("Erreur lors de la récupération des restaurants", "times-circle", 
                         theme, theme.text, 3000);
-                }
-            
+                } 
+                
         };
 
         if (isAuthenticated && isBackendConnected) {
@@ -88,6 +94,7 @@ export const AuthProvider = ({ children }) => {
                 
                 refreshDataReport()
                 refreshDataAjout()
+                getUser()
             }
         }
     }, [isAuthenticated,isBackendConnected]);

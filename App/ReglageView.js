@@ -34,7 +34,7 @@ import Animated, {
   } from 'react-native-reanimated';
 
 
-export default AvisView = ({}) => {
+export default ReglageView = ({}) => {
 
     const { theme,changeTheme,themeName } = useTheme();
     const navigation = useNavigation();
@@ -89,6 +89,13 @@ export default AvisView = ({}) => {
 
                 
                 <MenueItem titre="🇫🇷 Langue" description="francais selectionné" theme={theme}/>
+
+                                    <MenueItem
+                                        titre="🧑‍🎨 Modifier mon avatar"
+                                        description="Personnalise ton avatar"
+                                        theme={theme}
+                                        onPress={() => navigation.navigate('AvatarCreation')}
+                                    />
                 
 
                 

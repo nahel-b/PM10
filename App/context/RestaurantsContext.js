@@ -1,13 +1,30 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 // Créer un contexte pour le thème
 const RestaurantContext = createContext([]);
-import { getAllTypeRestaurants,getAllDish,getRestaurantReports,getReviewsAttente } from '../Api';
+import { getAllTypeRestaurants,getAllDish,getRestaurantReports,getReviewsAttente, postUserInfo } from '../Api';
 
 
 export const RestaurantProvider = ({ children }) => {
   const [restaurants, setRestaurants] = useState([]); 
   const [typeRestaurants, setTypeRestaurants] = useState([]);
   const [dish, setDish] = useState([]);
+
+  const [avatar,setAvatar] = useState(null);
+
+  const saveAvatar = async (avatarString) => {
+    try {
+      if (!avatarString || typeof avatarString !== 'string') {
+        throw new Error('Avatar invalide');
+      }
+      console.log("iciiii", avatarString);
+      await postUserInfo(avatarString);
+      setAvatar(avatarString);
+      return true;
+    } catch (e) {
+      console.error('Failed to save avatar:', e);
+      return false;
+    }
+  }
 
 
   const [reportData, setReportData] = useState([]);
@@ -73,7 +90,7 @@ export const RestaurantProvider = ({ children }) => {
 
 
   return (
-    <RestaurantContext.Provider value={{dish,updateAjout,deleteAjout,refreshDataAjout,ajoutData,refreshDataReport, updateReport,reportData,updateRestaurant, restaurants, setRestaurants, typeRestaurants, refreshDataRestaurant }}>
+    <RestaurantContext.Provider value={{dish,updateAjout,deleteAjout,refreshDataAjout,ajoutData,refreshDataReport, updateReport,reportData,updateRestaurant, restaurants, setRestaurants, typeRestaurants, refreshDataRestaurant,avatar,saveAvatar,setAvatar }}>
       {children}
     </RestaurantContext.Provider>
   );

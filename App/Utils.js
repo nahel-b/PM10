@@ -1,6 +1,6 @@
 import Toast from 'react-native-toast-message';
 import React from 'react';
-import { View, Text, StyleSheet,ActivityIndicator, TouchableOpacity, Modal, ScrollView, TextInput, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet,ActivityIndicator, TouchableOpacity, Modal, ScrollView, TextInput, Image, Dimensions, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -63,5 +63,16 @@ export const ToastObj = ({}) =>
     
     return(<Toast config={toastConfig} />)
   }
+
+
+  
+export function getDeviceCornerRadius() {
+  const { width, height } = Dimensions.get('window');
+  if (Platform.OS !== 'ios') return 30;
+  const minSide = Math.min(width, height);
+
+  const radius = Math.round(Math.min(Math.max(minSide * 0.12, 38), 52));
+  return radius;
+}
 
 
