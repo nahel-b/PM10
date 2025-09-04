@@ -1,10 +1,21 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { View, Text, Dimensions, Image, TouchableOpacity, ActivityIndicator,ScrollView } from 'react-native';
+import React, { useRef, useState, useEffect, use } from 'react';
+import { View, Text, Dimensions, Image, TouchableOpacity, ActivityIndicator, ScrollView, Platform } from 'react-native';
 
 import { Animated as RNAnimated } from 'react-native';
+import { Easing as RNEasing } from 'react-native';
 
-import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
+import Animated, { 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withTiming, 
+  withSpring,
+  withSequence,
+  interpolate,
+  runOnJS,
+  Easing,
+  withDelay
+} from 'react-native-reanimated';
 
 import MapView, { Marker } from 'react-native-maps';
 import ClusteredMapView from "react-native-map-clustering";
@@ -36,6 +47,8 @@ import {AuthContext} from './context/AuthProvider';
 import  CustomModal from './ModalMenue';
 import { useRestaurant } from './context/RestaurantsContext';
 import Toast from 'react-native-toast-message';
+import BouncyAppear from './components/BouncyAppear';
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 const DEFAULT_LOCATION = { latitude: 37.78825, longitude: -122.4324 }; 
@@ -68,6 +81,13 @@ const App = () => {
     const [currentMapRegion, setCurrentMapRegion] = useState(null);
 
     const {authLevel} =  React.useContext(AuthContext)
+
+
+    const locationButtonRotation = useSharedValue(0);
+    const mapControlsOpacity = useSharedValue(1);
+
+
+
   
     useEffect(() => {
       setMarkers(restaurants); // Mettre à jour les marqueurs quand les restaurants changent
@@ -109,28 +129,28 @@ const App = () => {
       }
     }, [storedLocation]);
   
-    const getCurrentLocation = async () => {
+
+    const getCurrentLocation = async (first = false) => {
       setLoading(true);
       setError(null);
       try {
         let { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
           setError('Permission refusée');
-          console.log(first)
-          if(!first){
-          ToastNotif("Veuillez activer la localisation dans les reglages", "times-circle", theme, theme.red, 3000);
-          }setLoading(false);
+          if (!first) {
+            ToastNotif("Veuillez activer la localisation dans les reglages", "times-circle", theme, theme.red, 3000);
+          }
+          setLoading(false);
           return;
         }
-  
+
         let currentLocation = await Location.getCurrentPositionAsync({});
         setLocation(currentLocation);
         await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(currentLocation.coords));
-        
         setStoredLocation(currentLocation.coords);
-        if(loading){
-        centerMapOnLocation();}
-
+        if (loading) {
+          centerMapOnLocation();
+        }
         setLoading(false);
       } catch (err) {
         setError('Échec de localisation');
@@ -152,12 +172,19 @@ const App = () => {
     };
   
     const handleLocationButtonPress = async (first = false) => {
-        if(loading){setLoading(false)}
-        else{
-      await getCurrentLocation(first);}
-    //   if (storedLocation) {
-    //     centerMapOnLocation();
-    //   }
+      if (loading) {
+        setLoading(false);
+        locationButtonRotation.value = withSpring(0);
+      } else {
+        locationButtonRotation.value = withSpring(360, {
+          damping: 10,
+          stiffness: 100,
+        });
+        await getCurrentLocation(first);
+        setTimeout(() => {
+          locationButtonRotation.value = withSpring(0);
+        }, 1000);
+      }
     };
   
     const handleMarkerPress = (marker) => {
@@ -165,6 +192,10 @@ const App = () => {
       setSelectedMarker(marker);
 
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+      setTimeout(() => {
+        mapControlsOpacity.value = withTiming(0.3, { duration: 300 });
+      }, 0);
 
       
   
@@ -180,6 +211,8 @@ const App = () => {
         RNAnimated.timing(animatedHeight, {
           toValue: Dimensions.get('window').height / 2,
           duration: 300,
+         // easing: RNEasing.bezier(0.25, 0.46, 0.45, 0.94),
+
           useNativeDriver: false,
         }).start();
       }
@@ -188,7 +221,7 @@ const App = () => {
     const closeModal = () => {
         RNAnimated.timing(animatedHeight, {
         toValue: 0,
-        duration: 300,
+        duration: 200,
         useNativeDriver: false,
       }).start(() => {
         setIsModalVisible(false);
@@ -255,6 +288,24 @@ const App = () => {
             }
       };
 
+    
+    const animatedLocationButtonStyle = useAnimatedStyle(() => {
+      return {
+        transform: [
+          { rotate: `${locationButtonRotation.value}deg` },
+        ],
+      };
+    });
+
+    const animatedMapControlsStyle = useAnimatedStyle(() => {
+      return {
+        opacity: mapControlsOpacity.value,
+      };
+    });
+
+    
+
+
 
   
     return (
@@ -290,50 +341,75 @@ const App = () => {
 
               >
                 <Animated.View style={{
-                  borderRadius: 5,
-                  shadowColor: '#000',
+                  borderRadius: 12,
+                  shadowColor: selectedMarker?.id === marker.id ? '#007AFF' : '#000',
                   opacity: selectedMarker ? (selectedMarker.id != marker.id ? 0.3 : 1) : 1,
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.5,
-                  padding: 5, justifyContent: 'flex-start', alignItems: 'flex-start', backgroundColor: theme.background
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: selectedMarker?.id === marker.id ? 0.4 : 0.25,
+                  borderWidth: selectedMarker?.id === marker.id ? 2 : 1,
+                  borderColor: selectedMarker?.id === marker.id ? '#007AFF' : 'rgba(0, 0, 0, 0.1)',
+                    
+                  
+                  padding: 5, paddingHorizontal : 8, justifyContent: 'flex-start', alignItems: 'flex-start', backgroundColor: theme.background,
+                
+                
                 }}>
                   <Image
                     source={image}
-                    style={{ width: 50, height: 50, top: -40, left : 5, position: "absolute" }}
+                    style={{ width: 70, height: 70, top: -60, left : -15, position: "absolute" }}
                   />
   
-                  <View style={{ position: "absolute", top: -10, right: -5, padding: 4, backgroundColor: theme.blue, borderRadius: 5 }}>
-                    <Text style={{ fontFamily: 'Inter-Black', fontSize: 12, color: "white" }}>New</Text>
+                  <View style={{ 
+                    position: "absolute", 
+                    top: -12, 
+                    right: -20,  
+                    paddingHorizontal: 6,
+                    paddingVertical: 3, 
+                    backgroundColor: '#FF3B30', 
+                    borderRadius: 8,
+                    shadowColor: '#FF3B30',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 4,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 2
+                  }}>
+                    <FontAwesome5 name="fire-alt" size={12} color="white" />
+                    <Text style={{ fontFamily: 'Inter-Black', fontSize: 12, color: "white" }}>NEW</Text>
                   </View>
   
-                  <Text style={{ marginTop: 5, fontFamily: 'Inter-Black', fontSize: 14, color: theme.text }}>{marker.title} </Text>
-                  <Text style={{ fontFamily: 'Inter-Medium', fontSize: 10, marginTop: -2, color: theme.dark_gray }}>{marker.type}</Text>
+                  <Text style={{ marginTop: 5, fontFamily: 'Inter-Black', fontSize: 16, color: theme.text }}>{marker.title} </Text>
+                  <Text style={{ fontFamily: 'Inter-Medium', fontSize: 11, marginTop: -2, color: theme.dark_gray }}>{marker.type}</Text>
                   <Rating
                     type='custom'
-                    ratingColor={"#FFC300"}
+                    ratingColor={"#FFCC00"}
                     ratingBackgroundColor={theme.light_gray}
                     startingValue={marker.ratingAverage}
-                    imageSize={15}
+                    imageSize={16}
                     readonly
                     tintColor={theme.background}
-                    style={{ marginLeft: 0 }}
+                    style={{ marginLeft: 0,marginTop: 2 }}
                   />
 
             <View style={{
                 width: 0,
                 height: 0,
-                borderLeftWidth: 20,
-                borderRightWidth: 20,
-                borderTopWidth: 15,
-                bottom: -12,
+                 borderLeftWidth: 22,
+                borderRightWidth: 22,
+                borderTopWidth: 18,
+                bottom: -15,
+
                 position: 'absolute',
                 borderLeftColor: 'transparent',
                 borderRightColor: 'transparent',
                 borderTopColor: theme.background,
                 alignSelf: 'center',
-                // shadowColor: '#000',
-                // shadowOffset: { width: 0, height: 2 },
-                // shadowOpacity: 0.5,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 7 },
+                shadowOpacity: 0.2,
                 }} />
                 </Animated.View>
               </Marker>
@@ -357,13 +433,22 @@ const App = () => {
          {!addingNewRestaurant && !replacingNewRestaurant &&
          <>
          <View style={{ flexDirection : "row", alignSelf : "center",alignItems : "flex-start", width : "90%"}}>
-            <View style={{flexDirection : "row",borderRadius : 15,backgroundColor :  theme.background,
+            <View style={{flexDirection : "row",borderRadius : 25,backgroundColor :  theme.background,
                 shadowColor: '#000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.5,
-                shadowRadius: 3,
+                shadowOffset: { width: 0, height: 8 },
+                shadowOpacity: 0.15,
+                shadowRadius: 20,
+                elevation: 8,
+                borderWidth: 1,
+                borderColor: 'rgba(0, 0, 0, 0.05)',
+            ...(Platform.OS === 'ios' && {
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 8 },
+                  shadowOpacity: 0.15,
+                  shadowRadius: 20,
+                }),
                 paddingVertical : 10, paddingHorizontal : 7,flex : 1,flexGrow : 2}}>
-                <Ionicons name="search" size={20} color={theme.dark_gray}/>
+                <Ionicons name="search" size={22} color="#007AFF"/>
                 <TextInput placeholderTextColor={theme.dark_gray} ref={searchInputRef} style={{color : theme.text,fontFamily : "Inter-Bold",marginLeft : 5}} placeholder='Recherche...' />
               
             </View>
@@ -371,19 +456,28 @@ const App = () => {
             <View style={{ flexDirection : "row", alignSelf : "center", justifyContent : "flex-end",alignItems : "center"}}>
             <View style={{
                 shadowColor: '#000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.5,
-                shadowRadius: 3,
-                backgroundColor : theme.background,
-                borderRadius : 15,
-                padding : 10.5,
-                marginLeft : 10,
+               shadowOffset: { width: 0, height: 8 },
+                shadowOpacity: 0.15,
+                shadowRadius: 20,
+                elevation: 8,
+                backgroundColor : 'rgba(255, 255, 255, 0.95)',
+                borderRadius : 20,
+                padding : 12,
+                marginLeft : 15,
                 flexDirection : "row",
+                borderWidth: 1,
+                borderColor: 'rgba(0, 0, 0, 0.05)',
+                ...(Platform.OS === 'ios' && {
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 8 },
+                  shadowOpacity: 0.15,
+                  shadowRadius: 20,
+                }),
             }}>
                 <TouchableOpacity activeOpacity={0.5} onPress={()=>{setMapType(mapType == "hybridFlyover" ? "standard" : "hybridFlyover")}}>
 
-                    {mapType == "hybridFlyover" ? <Ionicons name="map-outline" size={20} color={theme.text} style={{ }} /> 
-                    : <FontAwesome name="globe" size={20} color={theme.text} style={{ }} />
+                    {mapType == "hybridFlyover" ? <Ionicons name="map-outline" size={22} color={"#007AFF"} style={{ }} /> 
+                    : <FontAwesome name="globe" size={22} color={"#007AFF"} style={{ }} />
                 }
 
                 </TouchableOpacity>
@@ -391,7 +485,7 @@ const App = () => {
                 <View style={{marginHorizontal : 8,borderLeftWidth : 1,borderColor : theme.gray}}/>
                 
                 <TouchableOpacity activeOpacity={0.5} onPress={()=>navigation.navigate("ReglageView")}>
-                <Ionicons name="cog" size={20} color={theme.text} /> 
+                <Ionicons name="cog" size={20} color={"#007AFF"} /> 
 
                     
                 </TouchableOpacity>
@@ -407,11 +501,27 @@ const App = () => {
 
         {authLevel>0 && <View style={{width : "95%",alignItems : "flex-end", justifyContent : "flex-end", marginTop : 5}} >
 
-        <TouchableOpacity activeOpacity={0.5} onPress={()=>{navigation.navigate("AdminView")}}>
-              
-              <View style={{backgroundColor : theme.background, padding : 9,borderRadius : 13,alignItems : "center",justifyContent : "center"}}>
-
-              <FontAwesome6 name="shield-cat" size={20} color={theme.red} style={{alignSelf : "center" }} />
+            <TouchableOpacity 
+                      activeOpacity={0.6} 
+                      onPress={()=>{navigation.navigate("AdminView")}}
+                      style={{
+                        shadowColor: '#FF3B30',
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 8,
+                        elevation: 6,
+                      }}
+                    >              
+                <View style={{
+                            backgroundColor : 'rgba(255, 59, 48, 0.1)', 
+                            padding : 12,
+                            borderRadius : 18,
+                            alignItems : "center",
+                            justifyContent : "center",
+                            borderWidth: 2,
+                            borderColor: '#FF3B30',
+                          }}>
+            <FontAwesome6 name="shield-cat" size={22} color="#FF3B30" style={{alignSelf : "center" }} />
 
               </View>
 
@@ -478,70 +588,118 @@ const App = () => {
             )}
   
         {/* Bouton de localisation */}
-        {!addingNewRestaurant && !replacingNewRestaurant && <View style={{
+        {!addingNewRestaurant && !replacingNewRestaurant && 
+        
+        <BouncyAppear style={{
           position: 'absolute',
-          bottom: 80,
-          right: 20,
+          bottom: 140,
+          right: 25,
           backgroundColor: theme.background,
           borderRadius: 50,
           padding: 0,
-          width: 50,
-          height: 50,
+          width: 60,
+          height: 60,
           zIndex: 1,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.8,
-          shadowRadius: 2,
-          elevation: 5,
+          shadowColor: '#007AFF',
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.25,
+          shadowRadius: 20,
+          elevation: 8,
           justifyContent: 'center',
           alignItems: 'center',
-        }}>
-          <TouchableOpacity onPress={() => handleLocationButtonPress(first = false)}>
-            {loading ? (
-              <ActivityIndicator size="small" color="black" />
+          borderWidth: 1,
+            borderColor: 'rgba(0, 0, 0, 0.05)',
+            ...(Platform.OS === 'ios' && {
+              shadowColor: '#007AFF',
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.25,
+              shadowRadius: 20,
+            }),
+        }}
+        pressScale={1.1}
+                    pressable={true}
+                    onPress={() => handleLocationButtonPress()}
+                    activeOpacity={0.7}
+        
+        > 
+              
+        <Animated.View style={[animatedLocationButtonStyle]}>
+ 
+                   {loading ? (
+              <ActivityIndicator size="small" color="#007AFF" />
             ) : error ? (
-              <Ionicons name="alert" size={25} color="blue" />
+              <Ionicons name="alert" size={28} color="#FF3B30" />
             ) : (
-            <View style={{position : "absolute",bottom : -14,left : -13}}>
-              <FontAwesome6 name="location-arrow" size={25} color={theme.text} />
-              </View>
+              <FontAwesome6 name="location-arrow" size={28} color={"#007AFF"} />
             )}
-          </TouchableOpacity>
-        </View>}
+            </Animated.View>
+          </BouncyAppear>
+       }
 
-        {!addingNewRestaurant && !replacingNewRestaurant && <View style={{
+        {!addingNewRestaurant && !replacingNewRestaurant &&
+        
+        
+       <BouncyAppear style={{
           position: 'absolute',
-          bottom: 20,
-          right: 20,
-          backgroundColor: theme.background,
+          bottom: 70,
+          right: 25,
+          //backgroundColor: '#007AFF',
           borderRadius: 50,
           padding: 0,
-          width: 50,
-          height: 50,
+          width: 60,
+          height: 60,
           zIndex: 1,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.8,
-          shadowRadius: 2,
-          elevation: 5,
+          shadowColor: '#23160aff',
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.25,
+          shadowRadius: 20,
+          elevation: 8,
           justifyContent: 'center',
           alignItems: 'center',
-        }}>
-          <TouchableOpacity onPress={() => handlePlusButtonPress()}>
-            
-              <FontAwesome6 name="plus" size={25} color={theme.text} />
-            
-          </TouchableOpacity>
-        </View>}
+          borderWidth: 1,
+            borderColor: 'rgba(0, 0, 0, 0.05)',
+            ...(Platform.OS === 'ios' && {
+              shadowColor: '#007AFF',
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.25,
+              shadowRadius: 20,
+            }),
+        }}
+        pressScale={1.1}
+                    pressable={true}
+                    onPress={() => handlePlusButtonPress()}
+                    activeOpacity={0.7}
+        
+        > 
+         <LinearGradient
+                      colors={['#448fdfff', 'rgba(3, 67, 135, 1)']}
+                      start={{x: 0, y: 0}}
+                      end={{x: 0, y: 1}}
+                    style={{
+                      width : "100%",
+                      height : "100%",
+                      borderRadius: 50,
+                      padding: 0,
+                      width: 60,
+                      height: 60,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                    
+                    >
+              <FontAwesome5 name="plus" size={28} color={"white"} />
+            </LinearGradient>
+          </BouncyAppear>
+        }
 
         {(addingNewRestaurant|| replacingNewRestaurant) && <View style={{
           position: 'absolute',
-          bottom: 20,
+          bottom: 30,
           alignSelf : "center",
           borderRadius: 50,
           padding: 10,
           zIndex: 1,
-          width: "80%",
+          width: "85%",
           flexDirection : "row",
           justifyContent: "space-around",
           alignItems: 'center',
@@ -805,60 +963,91 @@ const ModalMarker = ({ selectedMarkerId, closeModal, animatedHeight,setReplacing
             height: animatedHeight,
             backgroundColor: theme.background,
             padding: 0,
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.8,
-            shadowRadius: 2,
-            elevation: 5,
+            borderTopLeftRadius: 30,
+            borderTopRightRadius: 30,
+            shadowOffset: { width: 0, height: -5 },
+            shadowOpacity: 0.15,
+            shadowRadius: 25,
+            elevation: 20,
             zIndex: 2,
+            borderWidth: 1,
+            borderColor: 'rgba(0, 0, 0, 0.05)',
+            ...(Platform.OS === 'ios' && {
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: -5 },
+              shadowOpacity: 0.15,
+              shadowRadius: 25,
+            }),
           }}
         >
+          <View style={{
+            width: 50,
+            height: 5,
+            backgroundColor: 'rgba(0, 0, 0, 0.2)',
+            borderRadius: 3,
+            alignSelf: 'center',
+            marginTop: 8,
+            marginBottom: 0,
+            position: 'absolute',
+          }} />
+
+          <BouncyAppear pressable={true} pressScale={1.05} delay={80}>
+            <View style={{width: 130,
+              height: 130,top: -90,
+              left: 10,position: 'absolute',
+                justifyContent: 'center', alignItems: 'center',
+                display : "flex"
+              }}>
           <Image
             source={image}
             style={{
               width: 130,
               height: 130,
-              alignSelf: 'flex-start',
-              position: 'absolute',
-              top: -90,
-              left: 10,
-              backgroundColor: 'transparent',
-              borderWidth: 0,
-              borderColor: 'white',
+              alignSelf: 'center',
+           
             }}
           />
-          <View style={{justifyContent : "flex-end", alignItems: 'center',paddingTop : 10,paddingRight : 10, flexDirection : "row" }}>
+          </View>
+          </BouncyAppear>
+          <View style={{justifyContent : "flex-end", alignItems: 'center',
+            paddingTop : 15,paddingRight : 15, 
+            flexDirection : "row" }}>
           
-          <TouchableOpacity onPress={openMenueModal}>
+          <BouncyAppear delay={120} pressable={true} onPress={openMenueModal}>
             <View style={{backgroundColor : "transparent", padding : 2, borderRadius : 50, marginRight : 5}}>
               <Feather name="more-horizontal" size={25} color="gray" />
               </View>
-            </TouchableOpacity>
+            </BouncyAppear>
  
             
-            <TouchableOpacity onPress={closeModal}>
+            <BouncyAppear delay={140} pressable={true} onPress={closeModal}>
                 <View style={{backgroundColor : theme.light_gray, padding : 2, borderRadius : 50}}>
               <Ionicons name="close" size={22} color="gray" />
                 </View> 
-            </TouchableOpacity>
+            </BouncyAppear>
  
           </View>
           <View style={{ paddingHorizontal  : 20 }}>
 
             <View style={{flexDirection:"row",justifyContent : "space-between", alignItems : "flex-end"}}>
             <View>
-            <Text style={{ fontFamily : 'Inter-Black', fontSize: 30,  marginTop: 10, color : theme.text }}>{selectedMarker.title} </Text>
-            <Text style={{fontFamily : 'Inter-Medium', fontSize: 12, marginTop: -5, color : theme.dark_gray }}>{selectedMarker.type}</Text>
-            
+              <BouncyAppear delay={160} pressable={true}>
+            <Text style={{ fontFamily : 'Inter-Black', fontSize: 30,letterSpacing : -0.5,  marginTop: 0, color : theme.text }}>{selectedMarker.title} </Text>
+            </BouncyAppear>
+              <BouncyAppear delay={190} pressable={true}>
+
+            <Text style={{fontFamily : 'Inter-Medium', fontSize: 14,letterSpacing : -0.2, marginTop: -5, color : theme.dark_gray }}>{selectedMarker.type}</Text>
+            </BouncyAppear>
             </View>
             {/* <Text style={{color : theme.dark_gray,fontSize : 11}}>Proposé par <Text style={{color : "red"}}>{selectedMarker.author}</Text></Text> */}
             </View>
           {/* Section pour le bouton et les étoiles */}
-          <View style={{ flexDirection: 'row', marginTop: 10, alignItems: 'center',justifyContent :"flex-start" }}>
+          <View style={{ flexDirection: 'row', marginTop: 10,flexWrap: 'wrap', alignItems: 'center',justifyContent :"flex-start" }}>
             
             <View style={{flexDirection : "row",alignItems:"center"}}>
+            
+            <BouncyAppear delay={210} pressable={true}>
+
             <Rating
               type='custom'
               ratingColor={theme.yellow}
@@ -869,35 +1058,106 @@ const ModalMarker = ({ selectedMarkerId, closeModal, animatedHeight,setReplacing
               tintColor={theme.background}
               style={{ marginLeft: 0 }} 
             />
+            </BouncyAppear>
+            
+            <BouncyAppear delay={230} pressable={true}>
+
             <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: theme.dark_gray }}>
                 {selectedMarker.reviews.length} avis
             </Text>
+            </BouncyAppear>
             </View>
-            <TouchableOpacity onPress={() => 
+            
+            
+            <View style={{ width: '100%', flexDirection: 'row', marginTop: 5, justifyContent : "flex-start",
+              alignItems : "center",flexWrap: 'wrap' }}>
+
+            <BouncyAppear delay={250} pressable={true} onPress={() => 
                 {
                     navigation.navigate('AvisView', {idRestaurant : selectedMarker.id, restaurant : selectedMarker}); 
 
-                }}>
+                }}
+                
+                style={{
+                shadowColor: '#007AFF',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.15,
+                shadowRadius: 8,
+                elevation: 3,
+                marginRight: 10,
+                marginBottom: 2,
+                marginTop: 5,
+                justifyContent : "center",
+              alignItems : "center",
+                ...(Platform.OS === 'ios' && {
+                  shadowColor: '#007AFF',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.15,
+                  shadowRadius: 8,
+                })
+            }}
+                >
 
-             <View style={{alignItems : "center", backgroundColor : theme.light_gray,marginLeft: 10,paddingHorizontal : 7, padding : 4, flexDirection : "row", borderRadius : 7 }} >
+             <View style={{alignItems : "center", backgroundColor : '#007AFF',marginLeft: 0,
+              paddingHorizontal : 10, padding : 6,justifyContent : "center",
+              alignItems : "center",
+               flexDirection : "row", borderRadius : 20 }} >
 
-              <FontAwesome name="pencil" size={15} color={theme.dark_gray} style={{  }} />
-                <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 14, color: theme.dark_gray, marginLeft : 5 }}>
+              <FontAwesome name="pencil" size={15} color={"white"} style={{  }} />
+                <Text style={{ 
+                  
+                  fontFamily: 'Inter-SemiBold', 
+                fontSize: 15, 
+                color: "white", 
+                marginLeft : 6,
+                textShadowColor: 'rgba(0,0,0,0.2)',
+                textShadowOffset: { width: 0, height: 1 },
+                textShadowRadius: 2,
+                 }}>
                     Rédiger un avis
                 </Text>
             </View> 
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}}>
-            <View style={{alignItems : "center", backgroundColor : theme.light_gray,marginLeft: 10, padding : 4, flexDirection : "row", borderRadius : 7 }} >
-                    
-                  <Ionicons name="bookmark-outline" size={18} color="gray" style={{  }} />
-                 
-                 </View>
-            </TouchableOpacity>
-            
+            </BouncyAppear>
+            <BouncyAppear delay={270} pressable={true}
+              onPress={() => {}}
+              activeOpacity={0.7}
+              style={{
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 2,
+                marginBottom: 0,
+                justifyContent : "center",
+              alignItems : "center",
+                ...(Platform.OS === 'ios' && {
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 4,
+                }),
+              }}
+            >
+            <View style={{
+              alignItems : "center", 
+              backgroundColor : 'rgba(0, 0, 0, 0.05)',
+              paddingVertical: 6,
+              paddingHorizontal: 8, 
+              flexDirection : "row", 
+              borderRadius : 20,
+              borderWidth: 1,
+              borderColor: 'rgba(0, 0, 0, 0.1)',
+              justifyContent : "center",
+              alignItems : "center",
+            }} >                  
+              <Ionicons name="bookmark-outline" size={18} color="#007AFF" style={{}} />             
+            </View>
+            </BouncyAppear>
+            </View>
           </View>   
-          <Text style={{textAlign : "left", fontFamily : "Inter-Medium",marginTop : 10,color : theme.dark_gray,fontSize : 11}}>Proposé par <Text style={{fontSize : 13,color : theme.red, fontFamily : "Inter-Bold"}}>{selectedMarker.author}</Text></Text>
-
+          <BouncyAppear delay={290} pressable={true} style={{alignSelf : "flex-start"}}>
+          <Text style={{textAlign : "center", fontFamily : "Inter-Medium",marginTop : 10,color : theme.dark_gray,fontSize : 11}}>Proposé par <Text style={{fontSize : 13,color : theme.red, fontFamily : "Inter-Bold"}}>{selectedMarker.author}</Text></Text>
+            </BouncyAppear>
             <View style={{ borderBottomColor: theme.light_gray, borderBottomWidth: 2, marginBottom: 5,marginTop : 5 }} /> 
             </View>
           {/* Section pour afficher les avis */}
@@ -974,26 +1234,84 @@ const ModalMarker = ({ selectedMarkerId, closeModal, animatedHeight,setReplacing
                                 //         </Text>
                                 //     </View>
                                 // </TouchableOpacity>
-                                <TouchableOpacity key={index} onPress={() => handleDishPress(dishItem)}>
-                                <View key={index} style={{ marginBottom: 15, backgroundColor : theme.light_gray,paddingVertical : 8,paddingHorizontal : 8,borderRadius : 10,marginHorizontal : 15 }}>
+                               <BouncyAppear pressable={true} delay={index*50 + 300} 
+                                  key={index} 
+                                  onPress={() => handleDishPress(dishItem)}
+                                  activeOpacity={0.7}
+                                  style={{
+                                    shadowColor: '#000',
+                                    shadowOffset: { width: 0, height: 2 },
+                                    shadowOpacity: 0.05,
+                                    shadowRadius: 8,
+                                    elevation: 2,
+                                    marginBottom: 12,
+                                    ...(Platform.OS === 'ios' && {
+                                      shadowColor: '#000',
+                                      shadowOffset: { width: 0, height: 2 },
+                                      shadowOpacity: 0.05,
+                                      shadowRadius: 8,
+                                    }),
+                                  }}
+                                >
+                                <View key={index} style={{ 
+                                  backgroundColor : 'rgba(255, 255, 255, 0.8)',
+                                  paddingVertical : 16,
+                                  paddingHorizontal : 20,
+                                  borderRadius : 20,
+                                  marginHorizontal : 20,
+                                  borderWidth: 1,
+                                  borderColor: 'rgba(0, 0, 0, 0.05)',
+                                }}>
+                                
+                                
+                                
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <View>
-                                            <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 15, color: theme.text }}>
-                                                {dishItem.dish.emoji} {dishItem.dish.name}
+                                     <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={{ 
+                                              fontFamily: 'Inter-Bold', 
+                                              fontSize: 17, 
+                                              color: theme.text,
+                                              letterSpacing: -0.3,
+                                            }}>
+                                                {dishItem.dish.emoji}  {dishItem.dish.name}
                                             </Text>
                                         </View>
-                                        <View style={{ backgroundColor: theme.blue, padding: 2,paddingHorizontal : 4, borderRadius: 5, marginLeft: 3, alignItems: 'center' }}>
-                                            <Text style={{ color: "white", fontFamily: 'Inter-SemiBold', fontSize: 13 }}>
+                                        <View style={{ 
+                                          backgroundColor: '#007AFF', 
+                                          paddingVertical: 4,
+                                          paddingHorizontal : 10, 
+                                          borderRadius: 12, 
+                                          marginLeft: 8, 
+                                          alignItems: 'center',
+                                          shadowColor: '#007AFF',
+                                          shadowOffset: { width: 0, height: 2 },
+                                          shadowOpacity: 0.3,
+                                          shadowRadius: 4,
+                                          elevation: 3,
+                                        }}>
+                                            <Text style={{ 
+                                              color: "white", 
+                                              fontFamily: 'Inter-Bold', 
+                                              fontSize: 14,
+                                              textShadowColor: 'rgba(0,0,0,0.2)',
+                                              textShadowOffset: { width: 0, height: 1 },
+                                              textShadowRadius: 2,
+                                            }}>
                                                 {dishItem.priceRange}
                                             </Text>
                                         </View>
                                     </View>
-                                    <View style={{flexDirection : "row",alignItems : "center"}}>
-                                        <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 11, color: 'gray', textDecorationLine: 'none' }}>
+                                    <View style={{flexDirection : "row",alignItems : "center", marginLeft: 12}}>
+                                        <Text style={{ 
+                                          fontFamily: 'Inter-Medium', 
+                                          fontSize: 12, 
+                                          color: '#8E8E93', 
+                                          textDecorationLine: 'none' 
+                                        }}>
                                             {dishItem.nbAvis + " avis"}
                                         </Text>    
-                                        <Ionicons name="chevron-forward" size={20} color="gray" />
+                                        <Ionicons name="chevron-forward" size={18} color="#8E8E93" style={{ marginLeft: 4 }} />
                                     
                                     </View>
 
@@ -1004,7 +1322,7 @@ const ModalMarker = ({ selectedMarkerId, closeModal, animatedHeight,setReplacing
                                 </Text> */}
 
                                 </View>
-                                </TouchableOpacity>
+                                </BouncyAppear>
                                 
                             ))}
                         </View>

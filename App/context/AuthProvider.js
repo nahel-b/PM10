@@ -89,13 +89,14 @@ export const AuthProvider = ({ children }) => {
 
         if (isAuthenticated && isBackendConnected) {
         loadAllRestaurants();
-        if(authLevel>0)
+        if(authLevel>10)
             {
-                
+                console.log("Loading type restaurants for authLevel ",authLevel);
                 refreshDataReport()
-                refreshDataAjout()
-                getUser()
+                refreshDataAjout() 
+                 
             }
+            getUser()
         }
     }, [isAuthenticated,isBackendConnected]);
 
