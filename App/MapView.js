@@ -19,6 +19,7 @@ import Animated, {
 
 import MapView, { Marker } from 'react-native-maps';
 import ClusteredMapView from "react-native-map-clustering";
+
 import * as Location from 'expo-location';
 import { PanGestureHandler, GestureHandlerRootView, State, TextInput } from 'react-native-gesture-handler';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -37,6 +38,9 @@ import {deleteReview,reportReview} from './Api';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+
+
 import { images } from './ImagesRestaurant';
 import ModalRestaurant from './ModalRestaurant';
 
@@ -49,6 +53,7 @@ import { useRestaurant } from './context/RestaurantsContext';
 import Toast from 'react-native-toast-message';
 import BouncyAppear from './components/BouncyAppear';
 import { LinearGradient } from 'expo-linear-gradient';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 
 const DEFAULT_LOCATION = { latitude: 37.78825, longitude: -122.4324 }; 
@@ -197,36 +202,43 @@ const App = () => {
         mapControlsOpacity.value = withTiming(0.3, { duration: 300 });
       }, 0);
 
-      
-  
       mapRef.animateToRegion({
         latitude: marker.coordinate.coordinates[1] - 0.0001,
         longitude: marker.coordinate.coordinates[0],
         latitudeDelta: 0.001,
         longitudeDelta: 0.001,
-      }, 1000);
-  
-      if (!isModalVisible) {
-        setIsModalVisible(true);
-        RNAnimated.timing(animatedHeight, {
-          toValue: Dimensions.get('window').height / 2,
-          duration: 300,
-         // easing: RNEasing.bezier(0.25, 0.46, 0.45, 0.94),
+      }, 500);
 
-          useNativeDriver: false,
-        }).start();
+      if (!isModalVisible) {
+        setTimeout(() => {
+          setIsModalVisible(true);
+          RNAnimated.timing(animatedHeight, {
+            toValue: Dimensions.get('window').height / 2,
+            duration: 300,
+            useNativeDriver: false,
+          }).start();
+        }, 1000); // Attend la fin de l'animation de la carte
       }
     };
   
     const closeModal = () => {
+        // Animation de dézoom de la carte avant de fermer le modal
+        if (selectedMarker && mapRef) {
+          mapRef.animateToRegion({
+            latitude: selectedMarker.coordinate.coordinates[1],
+            longitude: selectedMarker.coordinate.coordinates[0],
+            latitudeDelta: 0.002,
+            longitudeDelta: 0.002,
+          }, 600);
+        }
         RNAnimated.timing(animatedHeight, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: false,
-      }).start(() => {
-        setIsModalVisible(false);
-        setSelectedMarker(null);
-      });
+          toValue: 0,
+          duration: 100,
+          useNativeDriver: false,
+        }).start(() => {
+          setIsModalVisible(false);
+          setSelectedMarker(null);
+        });
     };
   
     const navigation = useNavigation();
@@ -380,6 +392,9 @@ const App = () => {
                     <FontAwesome5 name="fire-alt" size={12} color="white" />
                     <Text style={{ fontFamily: 'Inter-Black', fontSize: 12, color: "white" }}>NEW</Text>
                   </View>
+
+                  
+                 
   
                   <Text style={{ marginTop: 5, fontFamily: 'Inter-Black', fontSize: 16, color: theme.text }}>{marker.title} </Text>
                   <Text style={{ fontFamily: 'Inter-Medium', fontSize: 11, marginTop: -2, color: theme.dark_gray }}>{marker.type}</Text>
@@ -405,6 +420,8 @@ const App = () => {
                 position: 'absolute',
                 borderLeftColor: 'transparent',
                 borderRightColor: 'transparent',
+
+                     
                 borderTopColor: theme.background,
                 alignSelf: 'center',
                 shadowColor: '#000',
@@ -1334,70 +1351,75 @@ const ModalMarker = ({ selectedMarkerId, closeModal, animatedHeight,setReplacing
 
 
             <View style={{ paddingHorizontal: 20,width : "50%",marginTop : 20 }}>
-            
-            {selectedMarker.reviews && selectedDish && selectedMarker.reviews.filter(review => review.dish.name == selectedDish.dish.name  ).map((review, index) => (
-              <View key={index} style={{ marginBottom: 10, backgroundColor : theme.light_gray,padding : 5,paddingHorizontal : 8,borderRadius : 10 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <View style={{ flexDirection: 'row',marginBottom : 5,marginTop : 5, alignItems: 'center' }}>
-                        <View>
-                            {/* <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 15, color: theme.text }}>
-                                {review.emoji} {review.dish}
-                            </Text> */}
-                            <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 15, color: theme.text }}>
-                                {review.username[0].toUpperCase() + review.username.slice(1)}
-                            </Text>
-                        </View>
-                        <View style={{ backgroundColor: theme.blue, padding: 2,paddingHorizontal : 4, borderRadius: 5, marginLeft: 3, alignItems: 'center' }}>
-                            <Text style={{ color: "white", fontFamily: 'Inter-SemiBold', fontSize: 13 }}>
-                                {review.price}€
-                            </Text>
-                        </View>
+
+            {selectedMarker.reviews && selectedDish && selectedMarker.reviews.filter(review => review.dish.name == selectedDish.dish.name).map((review, index) => (
+              <View
+                key={index}
+                style={{
+                  marginBottom: 16,
+                  backgroundColor: 'rgba(255,255,255,0.95)',
+                  paddingVertical: 18,
+                  paddingHorizontal: 18,
+                  borderRadius: 22,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.08,
+                  shadowRadius: 12,
+                  elevation: 3,
+                  borderWidth: 1,
+                  borderColor: 'rgba(0,0,0,0.04)',
+                }}
+              >
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                    <Text style={{ fontFamily: 'Inter-Bold', fontSize: 16, color: theme.text, letterSpacing: -0.2 }}>
+                      {review.username[0].toUpperCase() + review.username.slice(1)}
+                    </Text>
+                    <View style={{
+                      backgroundColor: theme.blue,
+                      paddingVertical: 3,
+                      paddingHorizontal: 10,
+                      borderRadius: 10,
+                      marginLeft: 8,
+                      alignItems: 'center',
+                      shadowColor: theme.blue,
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.18,
+                      shadowRadius: 4,
+                      elevation: 2,
+                    }}>
+                      <Text style={{ color: 'white', fontFamily: 'Inter-Bold', fontSize: 14 }}>
+                        {review.price}€
+                      </Text>
                     </View>
-                    <View style={{marginTop : -10}}>
-                        {/* <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 11, color: 'gray', textDecorationLine: 'none' }}>
-                            {review.name}
-                        </Text> */}
-
-
-                        <TouchableOpacity onPress={() => openReviewMenueModal(review)}>
-                            <Feather name="more-horizontal" size={25} color="gray" />
-                        </TouchableOpacity>
-
-                    </View>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => openReviewMenueModal(review)}
+                    style={{ padding: 4, borderRadius: 50, backgroundColor: 'rgba(0,0,0,0.04)' }}
+                  >
+                    <Feather name="more-horizontal" size={22} color="#8E8E93" />
+                  </TouchableOpacity>
                 </View>
 
-
-                <Text style={{ fontFamily: 'Inter-Medium', fontSize: 14, color : theme.dark_gray, marginVertical: 5 }}>
+                <Text style={{ fontFamily: 'Inter-Medium', fontSize: 15, color: theme.dark_gray, marginVertical: 8, lineHeight: 21 }}>
                   {review.comment}
                 </Text>
-                
-                {/* <Rating
-                  type='custom'
-                  ratingColor='#FFD700'
-                  ratingBackgroundColor='#D3D3D3'
-                  startingValue={review.rating}
-                  imageSize={15}
-                  readonly
-                  tintColor={theme.light_gray}
-                  style={{ alignSelf: 'flex-start' }}
-                /> */}
-       <View style={{ flexDirection: 'row', alignItems: 'center',justifyContent:"space-between" }}>
 
-                <Rating
-                            type='custom'
-                            ratingColor={theme.yellow}
-                            ratingBackgroundColor={theme.gray}
-                            startingValue={review.rating}
-                            imageSize={20}
-                            readonly
-                            tintColor={theme.light_gray}
-                            style={{ alignSelf: 'flex-start' }}
-                            />
-                <Text style={{ fontFamily: 'Inter-Medium', fontSize: 12, color: 'gray', marginLeft: 5 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 }}>
+                  <Rating
+                    type='custom'
+                    ratingColor={theme.yellow}
+                    ratingBackgroundColor={theme.gray}
+                    startingValue={review.rating}
+                    imageSize={22}
+                    readonly
+                    tintColor={"white"}
+                    style={{ alignSelf: 'flex-start' }}
+                  />
+                  <Text style={{ fontFamily: 'Inter-Medium', fontSize: 13, color: '#8E8E93', marginLeft: 8 }}>
                     {review.date_visite}
-                </Text>
-
-                            </View>
+                  </Text>
+                </View>
               </View>
             ))}
             </View>
