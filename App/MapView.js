@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, use } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { View, Text, Dimensions, Image, TouchableOpacity, ActivityIndicator, ScrollView, Platform } from 'react-native';
 
 import { Animated as RNAnimated } from 'react-native';
@@ -17,8 +17,8 @@ import Animated, {
   withDelay
 } from 'react-native-reanimated';
 
-import MapView, { Marker } from 'react-native-maps';
-import ClusteredMapView from "react-native-map-clustering";
+import  { Marker } from 'react-native-maps';
+import MapView from "react-native-map-clustering";
 
 import * as Location from 'expo-location';
 import { PanGestureHandler, GestureHandlerRootView, State, TextInput } from 'react-native-gesture-handler';
@@ -54,6 +54,7 @@ import Toast from 'react-native-toast-message';
 import BouncyAppear from './components/BouncyAppear';
 import { LinearGradient } from 'expo-linear-gradient';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import ShineWrapper from './components/ShineWrapper';
 
 
 const DEFAULT_LOCATION = { latitude: 37.78825, longitude: -122.4324 }; 
@@ -62,8 +63,13 @@ const STORAGE_KEY = "lastLocation";
 
 
 const App = () => {
-    const [mapRef, setMapRef] = useState(null);
-    const [selectedMarker, setSelectedMarker] = useState(null);
+    
+  
+    const mapRef = useRef();
+
+
+
+  const [selectedMarker, setSelectedMarker] = useState(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [location, setLocation] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -167,7 +173,7 @@ const App = () => {
   
     const centerMapOnLocation = () => {
       if (mapRef && storedLocation) {
-        mapRef.animateToRegion({
+        mapRef.current.animateToRegion({
           latitude: storedLocation.latitude,
           longitude: storedLocation.longitude,
           latitudeDelta: 0.01,
@@ -202,7 +208,7 @@ const App = () => {
         mapControlsOpacity.value = withTiming(0.3, { duration: 300 });
       }, 0);
 
-      mapRef.animateToRegion({
+      mapRef.current.animateToRegion({
         latitude: marker.coordinate.coordinates[1] - 0.0001,
         longitude: marker.coordinate.coordinates[0],
         latitudeDelta: 0.001,
@@ -224,7 +230,7 @@ const App = () => {
     const closeModal = () => {
         // Animation de dézoom de la carte avant de fermer le modal
         if (selectedMarker && mapRef) {
-          mapRef.animateToRegion({
+          mapRef.current.animateToRegion({
             latitude: selectedMarker.coordinate.coordinates[1],
             longitude: selectedMarker.coordinate.coordinates[0],
             latitudeDelta: 0.002,
@@ -238,7 +244,8 @@ const App = () => {
         }).start(() => {
           setIsModalVisible(false);
           setSelectedMarker(null);
-        });
+        }) ;
+
     };
   
     const navigation = useNavigation();
@@ -323,7 +330,8 @@ const App = () => {
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>
         <MapView
-          ref={setMapRef}
+          ref={mapRef}
+          mapRef={(ref) => { mapRef.current = ref; }}
           style={{ flex: 1 }}
           key={mapKey}
           onRegionChangeComplete={(region) => {setCurrentMapRegion(region);}}
@@ -491,21 +499,21 @@ const App = () => {
                   shadowRadius: 20,
                 }),
             }}>
-                <TouchableOpacity activeOpacity={0.5} onPress={()=>{setMapType(mapType == "hybridFlyover" ? "standard" : "hybridFlyover")}}>
+                <BouncyAppear pressable={true}  activeOpacity={0.5} onPress={()=>{setMapType(mapType == "hybridFlyover" ? "standard" : "hybridFlyover")}}>
 
                     {mapType == "hybridFlyover" ? <Ionicons name="map-outline" size={22} color={"#007AFF"} style={{ }} /> 
                     : <FontAwesome name="globe" size={22} color={"#007AFF"} style={{ }} />
                 }
 
-                </TouchableOpacity>
+                </BouncyAppear>
 
                 <View style={{marginHorizontal : 8,borderLeftWidth : 1,borderColor : theme.gray}}/>
                 
-                <TouchableOpacity activeOpacity={0.5} onPress={()=>navigation.navigate("ReglageView")}>
+                <BouncyAppear pressable={true}  activeOpacity={0.5} onPress={()=>navigation.navigate("ReglageView")}>
                 <Ionicons name="cog" size={20} color={"#007AFF"} /> 
 
                     
-                </TouchableOpacity>
+                </BouncyAppear>
 
             </View>
             
@@ -518,7 +526,7 @@ const App = () => {
 
         {authLevel>0 && <View style={{width : "95%",alignItems : "flex-end", justifyContent : "flex-end", marginTop : 5}} >
 
-            <TouchableOpacity 
+            <BouncyAppear pressable={true}  
                       activeOpacity={0.6} 
                       onPress={()=>{navigation.navigate("AdminView")}}
                       style={{
@@ -542,7 +550,7 @@ const App = () => {
 
               </View>
 
-        </TouchableOpacity>
+        </BouncyAppear>
         </View>}
         </>}
 
@@ -721,7 +729,7 @@ const App = () => {
           justifyContent: "space-around",
           alignItems: 'center',
         }}>
-            <TouchableOpacity onPress={() => {
+            <BouncyAppear pressable={true}  onPress={() => {
 
               if(addingNewRestaurant){
               setAddingNewRestaurant(false)}
@@ -742,9 +750,9 @@ const App = () => {
               <FontAwesome name="times" size={15} color={theme.gray} />
               <Text style={{marginLeft : 5,color : theme.gray, fontSize : 16, fontFamily : "Inter-Bold"}}>Annuler</Text>
             </View>
-          </TouchableOpacity>
+          </BouncyAppear>
 
-          <TouchableOpacity onPress={() => handleValidation()}>
+          <BouncyAppear pressable={true}  onPress={() => handleValidation()}>
             <View style={{flexDirection : 'row',alignItems : "center",
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 2 },
@@ -759,7 +767,7 @@ const App = () => {
               <FontAwesome name="check" size={15} color={"white"} />
               <Text style={{marginLeft : 5,color : "white", fontSize : 16, fontFamily : "Inter-Bold"}}>Placer</Text>
             </View>
-          </TouchableOpacity>
+          </BouncyAppear>
           
         </View>}
       </GestureHandlerRootView>
@@ -808,9 +816,17 @@ const ModalMarker = ({ selectedMarkerId, closeModal, animatedHeight,setReplacing
     useEffect(() => {
       selectedMarker = restaurants.find((r) => r.id === selectedMarkerId);
     }, [restaurants]);
-    
+
+
+    //  const forceRerender = () => {
+    //     setMapKey(prevKey => (prevKey === 'map1' ? 'map2' : 'map1'));
+    //   };
+
     const openMenueModal = () => {
         setIsMenueModalVisible(true);
+        // setTimeout(() => {
+        //   forceRerender();
+        // }, 300); 
       };
     
       const closeMenueModal = () => {
@@ -941,7 +957,7 @@ const ModalMarker = ({ selectedMarkerId, closeModal, animatedHeight,setReplacing
         };
     });
 
-
+  const shineRef = useRef();
 
 
     return (
@@ -1089,54 +1105,74 @@ const ModalMarker = ({ selectedMarkerId, closeModal, animatedHeight,setReplacing
             <View style={{ width: '100%', flexDirection: 'row', marginTop: 5, justifyContent : "flex-start",
               alignItems : "center",flexWrap: 'wrap' }}>
 
-            <BouncyAppear delay={250} pressable={true} onPress={() => 
-                {
-                    navigation.navigate('AvisView', {idRestaurant : selectedMarker.id, restaurant : selectedMarker}); 
 
+            <ShineWrapper
+  variant="highlight"
+  mode="inside"
+  spawnIntervalRange={[4000, 5000
+  ]}
+  spawnPerInterval={1}
+  maxConcurrent={1}
+  roundness={0.4}
+>
+                <BouncyAppear delay={250} pressable={true} onPress={() => 
+                    {
+                        navigation.navigate('AvisView', {idRestaurant : selectedMarker.id, restaurant : selectedMarker}); 
+
+                    }}
+                    
+                    style={{
+                    shadowColor: '#007AFF',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 8,
+                    elevation: 3,
+                    marginRight: 10,
+                    marginBottom: 2,
+                    marginTop: 5,
+                    justifyContent : "center",
+                  alignItems : "center",
+                    ...(Platform.OS === 'ios' && {
+                      shadowColor: '#007AFF',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.15,
+                      shadowRadius: 8,
+                    })
                 }}
+                    >
+
+                <View style={{alignItems : "center", backgroundColor : '#007AFF',marginLeft: 0,
+                  paddingHorizontal : 10, padding : 6,justifyContent : "center",
+                  alignItems : "center",
+                  flexDirection : "row", borderRadius : 20 }} >
+
+                  <FontAwesome name="pencil" size={15} color={"white"} style={{  }} />
+                    <Text style={{ 
+                      
+                      fontFamily: 'Inter-SemiBold', 
+                    fontSize: 15, 
+                    color: "white", 
+                    marginLeft : 6,
+                    textShadowColor: 'rgba(0,0,0,0.2)',
+                    textShadowOffset: { width: 0, height: 1 },
+                    textShadowRadius: 2,
+                    }}>
+                        Rédiger un avis
+                    </Text>
+                </View> 
                 
-                style={{
-                shadowColor: '#007AFF',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.15,
-                shadowRadius: 8,
-                elevation: 3,
-                marginRight: 10,
-                marginBottom: 2,
-                marginTop: 5,
-                justifyContent : "center",
-              alignItems : "center",
-                ...(Platform.OS === 'ios' && {
-                  shadowColor: '#007AFF',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.15,
-                  shadowRadius: 8,
-                })
-            }}
-                >
-
-             <View style={{alignItems : "center", backgroundColor : '#007AFF',marginLeft: 0,
-              paddingHorizontal : 10, padding : 6,justifyContent : "center",
-              alignItems : "center",
-               flexDirection : "row", borderRadius : 20 }} >
-
-              <FontAwesome name="pencil" size={15} color={"white"} style={{  }} />
-                <Text style={{ 
-                  
-                  fontFamily: 'Inter-SemiBold', 
-                fontSize: 15, 
-                color: "white", 
-                marginLeft : 6,
-                textShadowColor: 'rgba(0,0,0,0.2)',
-                textShadowOffset: { width: 0, height: 1 },
-                textShadowRadius: 2,
-                 }}>
-                    Rédiger un avis
-                </Text>
-            </View> 
             </BouncyAppear>
+            </ShineWrapper>
+            <ShineWrapper
+              variant="highlight"
+              mode="edges"
+              minStars={6}
+              maxConcurrent={20}
+              active={false}
+              ref={shineRef}
+            >
             <BouncyAppear delay={270} pressable={true}
-              onPress={() => {}}
+              onPress={() => {shineRef.current.burst(10);}}
               activeOpacity={0.7}
               style={{
                 shadowColor: '#000',
@@ -1170,6 +1206,7 @@ const ModalMarker = ({ selectedMarkerId, closeModal, animatedHeight,setReplacing
               <Ionicons name="bookmark-outline" size={18} color="#007AFF" style={{}} />             
             </View>
             </BouncyAppear>
+            </ShineWrapper>
             </View>
           </View>   
           <BouncyAppear delay={290} pressable={true} style={{alignSelf : "flex-start"}}>
@@ -1184,7 +1221,7 @@ const ModalMarker = ({ selectedMarkerId, closeModal, animatedHeight,setReplacing
 
         <View style={{flex : 1 }} >
 
-          <TouchableOpacity 
+          <BouncyAppear pressable={true}  
                 onPress={handleBackPress} 
                 style={{
                     zIndex : 2,}}
@@ -1208,9 +1245,9 @@ const ModalMarker = ({ selectedMarkerId, closeModal, animatedHeight,setReplacing
                  
                 </Text>
                 </Animated.View>
-            </TouchableOpacity>
+            </BouncyAppear>
 
-            <TouchableOpacity 
+            <BouncyAppear pressable={true} 
                 onPress={handleBackPress} 
                 style={{
                     zIndex : 2,}}
@@ -1230,7 +1267,7 @@ const ModalMarker = ({ selectedMarkerId, closeModal, animatedHeight,setReplacing
                     {selectedDish.dish.emoji} {selectedDish.dish.name}
                 </Text>}
                 </Animated.View>
-            </TouchableOpacity>
+            </BouncyAppear>
 
 
 
@@ -1393,12 +1430,14 @@ const ModalMarker = ({ selectedMarkerId, closeModal, animatedHeight,setReplacing
                       </Text>
                     </View>
                   </View>
-                  <TouchableOpacity
+                  <BouncyAppear
+                    pressable={true}
+                    pressScale={1.2}
                     onPress={() => openReviewMenueModal(review)}
                     style={{ padding: 4, borderRadius: 50, backgroundColor: 'rgba(0,0,0,0.04)' }}
                   >
                     <Feather name="more-horizontal" size={22} color="#8E8E93" />
-                  </TouchableOpacity>
+                  </BouncyAppear>
                 </View>
 
                 <Text style={{ fontFamily: 'Inter-Medium', fontSize: 15, color: theme.dark_gray, marginVertical: 8, lineHeight: 21 }}>
@@ -1435,10 +1474,10 @@ const ModalMarker = ({ selectedMarkerId, closeModal, animatedHeight,setReplacing
                     title={selectedMarker.title}
                     options={
                         [
-                            { label: "Le restaurant n'est pas bien placé", handle: () => handleReplaceResto() },
-                            { label: "Les horraires ont changées", handle: () => console.log("Modifier") },
-                            { label: "Le nom ou le type de restaurant est incorrect", handle: () => console.log("Modifier") },
-                            { label: "Le restaurant n'existe pas",dangerous : true, handle: () => console.log("Supprimer") },
+                            { label: "Le restaurant n'est pas bien placé", handle: () => handleReplaceResto(), icon : <FontAwesome6 name="location-dot" size={24} color="black" /> },
+                            { label: "Les horraires ont changées", handle: () => console.log("Modifier"),icon : <FontAwesome6 name="clock-four" size={24} color="black" /> },
+                            { label: "Le nom ou le type de restaurant est incorrect", handle: () => console.log("Modifier"), icon : <FontAwesome6 name="pen" size={24} color="black" /> },
+                            { label: "Le restaurant n'existe pas",dangerous : true, handle: () => console.log("Supprimer"), icon : <FontAwesome6 name="trash" size={24} color="red" /> },
                         ]}
                 />
 
