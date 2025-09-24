@@ -16,7 +16,8 @@ export const RestaurantProvider = ({ children }) => {
       if (!avatarString || typeof avatarString !== 'string') {
         throw new Error('Avatar invalide');
       }
-      console.log("iciiii", avatarString);
+
+
       await postUserInfo(avatarString);
       setAvatar(avatarString);
       return true;

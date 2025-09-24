@@ -74,7 +74,8 @@ export const AuthProvider = ({ children }) => {
             
                 try {
                     ToastNotif("Récupération des restaurants...", "loading-cricle", theme, theme.text, 10000, "bottom", true);
-                  
+                                        
+                    
                     const restaurants = await getAllRestaurants(logout);
                     setRestaurants(restaurants);
                     refreshDataRestaurant();
