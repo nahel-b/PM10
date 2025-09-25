@@ -4,9 +4,9 @@ import { Modal } from 'react-native';
 import Animated, { Easing, useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useTheme } from './context/ThemeContext';
-import { getDeviceCornerRadius } from './Utils';
-import BouncyAppear from './components/BouncyAppear';
+import { useTheme } from '../context/ThemeContext';
+import { getDeviceCornerRadius } from '../Utils';
+import BouncyAppear from './BouncyAppear';
 
 const CustomModal = ({ visible, onClose, options,title }) => {
   const opacity = useSharedValue(0);
@@ -40,8 +40,8 @@ const CustomModal = ({ visible, onClose, options,title }) => {
       justifyContent: 'flex-end',
     },
     modalContainer: {
-      width: '93%',
-      marginBottom: 15,
+      width: '95%',
+      marginBottom: 10,
       borderRadius : getDeviceCornerRadius(),
       alignSelf: 'center',
       backgroundColor: theme.background,
@@ -105,7 +105,7 @@ const CustomModal = ({ visible, onClose, options,title }) => {
             </BouncyAppear>
           </View>
           
-          <View style={{ borderRadius : 10,marginTop : getDeviceCornerRadius()/2 ,marginBottom : getDeviceCornerRadius()/2 }}>
+          <View style={{ borderRadius : 10,marginTop : getDeviceCornerRadius()/2 ,marginBottom : getDeviceCornerRadius()/1.5 }}>
             {options_filtre.map((option, index) => {
               if(!option) return null;
 

@@ -30,7 +30,7 @@ import * as Haptics from 'expo-haptics';
 
 import {AuthContext} from './context/AuthProvider';
 
-import  CustomModal from './ModalMenue';
+import  CustomModal from './components/ModalMenue';
 
 import MapView from "react-native-map-clustering";
 import { useRestaurant } from './context/RestaurantsContext';

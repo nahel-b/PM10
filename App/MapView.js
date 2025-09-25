@@ -48,7 +48,7 @@ import * as Haptics from 'expo-haptics';
 
 import {AuthContext} from './context/AuthProvider';
 
-import  CustomModal from './ModalMenue';
+import  CustomModal from './components/ModalMenue';
 import { useRestaurant } from './context/RestaurantsContext';
 import Toast from 'react-native-toast-message';
 import BouncyAppear from './components/BouncyAppear';

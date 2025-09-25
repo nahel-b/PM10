@@ -22,7 +22,7 @@ import { useRestaurant } from '../context/RestaurantsContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { useNavigation,useRoute,useIsFocused } from '@react-navigation/native';
-import CustomModal from '../ModalMenue';
+import CustomModal from '../components/ModalMenue';
 import Slider from '@react-native-community/slider';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import DateTimePickerModal from "react-native-modal-datetime-picker";

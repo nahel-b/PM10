@@ -20,7 +20,7 @@ import { useNavigation,useRoute } from '@react-navigation/native';
 import BouncyAppear from '../components/BouncyAppear';
 
 
-import CustomModal from '../ModalMenue';
+import CustomModal from '../components/ModalMenue';
 import { SendRatingRestaurant,deleteReview } from '../Api';
 import Toast from 'react-native-toast-message';
 import { ToastNotif } from '../Utils';
@@ -31,7 +31,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 // import NewAvisView from './NewAvisView';
 
 
-export default AvisViewPrincipal = () => {
+const AvisViewPrincipal = () => {
     const { theme } = useTheme();
     const navigation = useNavigation();
     const route = useRoute();
@@ -456,4 +456,6 @@ export default AvisViewPrincipal = () => {
         </View> 
     )
 }
+
+export default AvisViewPrincipal;
 

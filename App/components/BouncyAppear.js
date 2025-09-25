@@ -2,6 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet } from 'react-native';
 import PropTypes from 'prop-types';
 
+import * as Haptics from 'expo-haptics';
+
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -18,6 +20,7 @@ const BouncyAppear = ({
 	pressable, // si non défini: devient pressable si onPress/onLongPress fournis
 	pressScale = 1.06,
 	disabled = false,
+	haptic = true,
 	hitSlop,
 }) => {
 	const scale = useRef(new Animated.Value(initialScale)).current;
@@ -39,6 +42,8 @@ const BouncyAppear = ({
 
 	const handlePressIn = () => {
 		if (!isPressable) return;
+				if (haptic) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
 		scale.stopAnimation();
 		Animated.spring(scale, {
 			toValue: Math.max(pressScale, 1.0),
@@ -50,6 +55,7 @@ const BouncyAppear = ({
 
 	const handlePressOut = () => {
 		if (!isPressable) return;
+
 		scale.stopAnimation();
 		Animated.spring(scale, {
 			toValue: 1,

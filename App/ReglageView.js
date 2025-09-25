@@ -34,7 +34,7 @@ import Animated, {
   } from 'react-native-reanimated';
 
 
-export default ReglageView = ({}) => {
+const ReglageView = ({}) => {
 
     const { theme,changeTheme,themeName } = useTheme();
     const navigation = useNavigation();
@@ -301,3 +301,5 @@ function MenueItem ({titre, description,onPress,theme,textColor=null,fleche = tr
                 </TouchableOpacity>
     )
 }
+
+export default ReglageView;
