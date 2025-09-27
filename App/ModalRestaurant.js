@@ -36,7 +36,7 @@ import MapView from "react-native-map-clustering";
 import { useRestaurant } from './context/RestaurantsContext';
 import Toast from 'react-native-toast-message';
 
-import {images} from './ImagesRestaurant';
+import {images} from './config/ImagesRestaurant';
 
   
 
