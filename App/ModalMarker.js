@@ -753,7 +753,7 @@ const ModalMarker = ({ selectedMarkerId, closeModal, animatedHeight,setReplacing
                     title={selectedMarker.title}
                     options={
                         [
-                            { label: "Le restaurant n'est pas bien placé", handle: () => handleReplaceResto(), icon : <FontAwesome6 name="location-dot" size={24} color="black" /> },
+                            { label: "Le restaurant n'est pas bien placé caca", handle: () => handleReplaceResto(), icon : <FontAwesome6 name="location-dot" size={24} color="black" /> },
                             { label: "Les horraires ont changées", handle: () => console.log("Modifier"),icon : <FontAwesome6 name="clock-four" size={24} color="black" /> },
                             { label: "Le nom ou le type de restaurant est incorrect", handle: () => console.log("Modifier"), icon : <FontAwesome6 name="pen" size={24} color="black" /> },
                             { label: "Le restaurant n'existe pas",dangerous : true, handle: () => console.log("Supprimer"), icon : <FontAwesome6 name="trash" size={24} color="red" /> },
