@@ -1,6 +1,7 @@
 import React, { useState,useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { setToken } from './config/TokenStorage';
 
 import {API_URL} from './config/Config';
 import { AuthContext } from './context/AuthProvider';
@@ -27,7 +28,7 @@ const AuthScreen = ({ navigation }) => {
     };
 
     const onLoggedIn = async (token,authLevel) => { 
-        await AsyncStorage.setItem('authToken', token);
+        await setToken(token);
         await AsyncStorage.setItem('username', username.toLocaleLowerCase());
         // navigation.navigate('MapView'); 
         console.log("oe")

@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '../config/Config';
+import { getToken, removeToken } from '../config/TokenStorage';
 import { getAllRestaurants, getAllTypeRestaurants, getUserInfo } from '../Api';
 import { ToastNotif, ToastHide } from '../Utils';
 import { useRestaurant } from './RestaurantsContext';
@@ -17,7 +18,7 @@ export const AuthProvider = ({ children }) => {
     const [authLevel, setAuthLevel] = useState(0);
 
     const logout = async () => {
-        await AsyncStorage.removeItem('authToken');
+        await removeToken();
         setIsAuthenticated(false);
     };
 
@@ -32,7 +33,7 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const checkAuthToken = async () => {
-        const token = await AsyncStorage.getItem('authToken');
+        const token = await getToken();
         if (token) {
             try {
                 const response = await fetch(`${API_URL}/checktoken`, {

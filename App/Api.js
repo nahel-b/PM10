@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getToken, setToken } from './config/TokenStorage';
 
 import {API_URL} from './config/Config';
 
@@ -6,8 +6,8 @@ const fetchWithToken = async (url, options = {},logout) => {
 
 
     try {
-        // Récupérer le token depuis AsyncStorage
-        const token = await AsyncStorage.getItem('authToken');
+        // Récupérer le token depuis le stockage sécurisé
+        const token = await getToken();
         if (!token) {
             throw new Error('No token found');
         }
@@ -24,8 +24,7 @@ const fetchWithToken = async (url, options = {},logout) => {
         const newToken = response.headers.get('Authorization');
         if (newToken) {
             const tokenPart = newToken.split(' ')[1];
-            await AsyncStorage.setItem('authToken', tokenPart);
-            console.log('New token:', tokenPart);
+            await setToken(tokenPart);
         }
 
         //check erreur 401 

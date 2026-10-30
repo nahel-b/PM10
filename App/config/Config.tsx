@@ -1,15 +1,9 @@
-//export const API_URL = "https://reko-backend-production.up.railway.app/api";
-//export const API_URL = "http://172.20.10.7:3000/api";
+// URL de l'API : définie par EXPO_PUBLIC_API_URL (voir .env.example).
+// En local, créer un fichier .env.local avec l'adresse de la machine qui fait tourner le backend.
+const DEFAULT_API_URL = "http://localhost:3000/api";
 
-export const API_URL = "http://localhost:3000/api";
+export const API_URL: string = process.env.EXPO_PUBLIC_API_URL ?? DEFAULT_API_URL;
 
-//export const API_URL = "http://172.20.10.2:3000/api";
-//export const API_URL = "http://172.20.10.3:3000/api";
-
-//export const API_URL = "http://192.168.1.25:3000/api";
-
-//export const API_URL = "http://172.19.0.107:3000/api"
-// export const API_URL = "http://192.168.0.106:3000/api";
-//export const API_URL = "https://pm10-backend.onrender.com/api";
-//export const BACKEND_URL = "https://reko-backend-production.up.railway.app";
-
+if (!__DEV__ && !process.env.EXPO_PUBLIC_API_URL) {
+    console.warn("EXPO_PUBLIC_API_URL n'est pas définie : l'application utilise " + DEFAULT_API_URL);
+}

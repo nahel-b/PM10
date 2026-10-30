@@ -41,7 +41,8 @@
             "./App/assets/fonts/Inter-ExtraLight.ttf"
           ]
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "extra": {
       "eas": {

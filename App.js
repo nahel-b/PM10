@@ -15,6 +15,11 @@ import AuthScreen from './App/AuthScreen';
 
 import AvatarCreationScreen from './App/AvatarCreationScreen';
 
+// Pas de logs en production (ils peuvent contenir des données utilisateur)
+if (!__DEV__) {
+  console.log = () => {};
+}
+
 const WaitBackendScreen = () => {
   const [attente, setAttente] = useState(0);
 

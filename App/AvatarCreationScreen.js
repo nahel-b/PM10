@@ -58,7 +58,6 @@ const AvatarCreationView = () => {
   
   
   useEffect(() => {
-    console.log("avatar from context", avatar);
     if (avatar === null || avatar === undefined) {
      // avatarRef.current?.randomize?.();
      console.log("reset charrr");
